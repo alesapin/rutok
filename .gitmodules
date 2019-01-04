@@ -1,0 +1,6 @@
+[submodule "contrib/unicorn-lib"]
+	path = contrib/unicorn-lib
+	url = https://github.com/alesapin/unicorn-lib
+[submodule "contrib/googletest"]
+	path = contrib/googletest
+	url = https://github.com/google/googletest/
