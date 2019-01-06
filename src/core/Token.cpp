@@ -1,5 +1,6 @@
 #include "Token.h"
 #include <unicorn/library.hpp>
+#include <core/charProperties.h>
 #include <tuple>
 #include <sstream>
 namespace tokenize
@@ -22,6 +23,8 @@ struct TokenImpl
 
 };
 }
+
+Token::~Token() = default;
 
 char32_t Token::operator[](size_t i) const
 {
@@ -121,14 +124,14 @@ ETokenType detectTokenType(const Ustring & str)
     ETokenType result = ETokenType::UNKNOWN;
     for (const auto & sym : utf_range(str))
     {
-        if (char_is_punctuation(sym))
+        if (charIsPunct(sym))
         {
             if (result == ETokenType::UNKNOWN)
                 result = ETokenType::PUNCT;
             else if (result != ETokenType::PUNCT)
                 return ETokenType::UNKNOWN;
         }
-        else if (char_is_digit(sym))
+        else if (charIsNumber(sym))
         {
             if (result == ETokenType::UNKNOWN)
                 result = ETokenType::NUMBER;
@@ -137,31 +140,28 @@ ETokenType detectTokenType(const Ustring & str)
             else if (result != ETokenType::NUMBER)
                 return ETokenType::UNKNOWN;
         }
-        else if (char_is_separator(sym) || char_is_control(sym))
+        else if (charIsSeparator(sym))
         {
             if (result == ETokenType::UNKNOWN)
                 result = ETokenType::SEPARATOR;
             else if (result != ETokenType::SEPARATOR)
                 return ETokenType::UNKNOWN;
         }
-        else if (char_general_category(sym) == GC::Sk
-            || char_general_category(sym) == GC::Sm || char_general_category(sym) == GC::Sc)
+        else if (charIsSymbol(sym))
         {
             if (result == ETokenType::UNKNOWN)
                 result = ETokenType::SYMBOL;
             else if (result != ETokenType::SYMBOL)
                 return ETokenType::UNKNOWN;
         }
-        else if (char_general_category(sym) == GC::So
-            || char_general_category(sym) == GC::Lo
-            )
+        else if (charIsHierglyph(sym))
         {
             if (result == ETokenType::UNKNOWN)
                 result = ETokenType::HIEROGLYPH;
             else if (result != ETokenType::HIEROGLYPH)
                 return ETokenType::UNKNOWN;
         }
-        else if (char_is_letter(sym))
+        else if (charIsLetter(sym))
         {
             if (result == ETokenType::UNKNOWN)
                 result = ETokenType::WORD;
@@ -432,66 +432,20 @@ TokenPtr Token::concat(const std::vector<TokenPtr> & tokens)
     return result;
 }
 
-namespace {
-std::string toStringSingle(EGraphemTag tag)
+template <class T>
+inline void hash_combine(std::size_t & seed, const T & v)
 {
-    switch(tag)
-    {
-    case EGraphemTag::UNKNOWN: return "UNKNOWN";
-    case EGraphemTag::CYRILLIC: return "CYRILLIC";
-    case EGraphemTag::LATIN: return "LATIN";
-    case EGraphemTag::UPPER_CASE: return "UPPER_CASE";
-    case EGraphemTag::LOWER_CASE: return "LOWER_CASE";
-    case EGraphemTag::MIXED_CASE: return "MIXED_CASE";
-    case EGraphemTag::TITLE_CASE: return "TITLE_CASE";
-    case EGraphemTag::CAN_TERMINATE_SENTENCE: return "CAN_TERMINATE_SENTENCE";
-    case EGraphemTag::PAIR: return "PAIR";
-    case EGraphemTag::MULTI_PUNCT: return "MULTI_PUNCT";
-    case EGraphemTag::FAKEPUNCT: return "FAKEPUNCT";
-    case EGraphemTag::NORMAL: return "NORMAL";
-    case EGraphemTag::ROMAN: return "ROMAN";
-    case EGraphemTag::CAN_TERMINATE_PARAGRAPH: return "CAN_TERMINATE_PARAGRAPH";
-    case EGraphemTag::MULTI_SEP: return "MULTI_SEP";
-    case EGraphemTag::HYPH_WORD: return "HYPH_WORD";
-    case EGraphemTag::MIX_LANG: return "MIX_LANG";
-    case EGraphemTag::MULTI_SYMBOL: return "MULTI_SYMBOL";
-    }
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 }
 
-std::string toStringSingle(ETokenType tag)
+size_t TokenHasher::operator()(const Token & token) const
 {
-    switch(tag)
-    {
-    case ETokenType::UNKNOWN: return "UNKNOWN";
-    case ETokenType::WORD: return "WORD";
-    case ETokenType::PUNCT: return "PUNCT";
-    case ETokenType::SEPARATOR: return "SEPARATOR";
-    case ETokenType::NUMBER: return "NUMBER";
-    case ETokenType::WORDNUM: return "WORDNUM";
-    case ETokenType::HIEROGLYPH: return "HIEROGLYPH";
-    case ETokenType::SYMBOL: return "SYMBOL";
-    }
+    size_t seed = 0;
+    hash_combine(seed, token.getData());
+    hash_combine(seed, token.getTokenType());
+    hash_combine(seed, token.getGraphemTag());
+    return seed;
 }
-}
-
-std::string toString(EGraphemTag tag_bag, const std::string & sep)
-{
-    std::ostringstream os;
-    std::vector<EGraphemTag> tags = toTagSet(tag_bag);
-    for (size_t i = 0; i < tags.size() - 1; ++i)
-        os << toStringSingle(tags[i]) << sep;
-    os << toStringSingle(tags.back());
-    return os.str();
-}
-std::string toString(ETokenType tag_bag, const std::string & sep)
-{
-    std::ostringstream os;
-    std::vector<ETokenType> tags = toTagSet(tag_bag);
-    for (size_t i = 0; i < tags.size() - 1; ++i)
-        os << toStringSingle(tags[i]) << sep;
-    os << toStringSingle(tags.back());
-    return os.str();
-}
-
 
 }

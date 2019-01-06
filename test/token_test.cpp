@@ -2,6 +2,7 @@
 #include <unicorn/string.hpp>
 #include <unicorn/character.hpp>
 #include <core/Token.h>
+#include <unordered_map>
 
 using namespace RS;
 using namespace RS::Unicorn;
@@ -260,4 +261,21 @@ TEST(TokenTest, TestConcat)
     EXPECT_EQ(EGraphemTag::UNKNOWN, merged18->getGraphemTag());
 }
 
-
+TEST(TokenTest, SimpleHash)
+{
+    std::unordered_map<Token, size_t, TokenHasher> counter;
+    TokenPtr first = Token::createToken("hello");
+    TokenPtr second = Token::createToken("world");
+    TokenPtr third = Token::createToken("hello");
+    TokenPtr fourth = Token::createToken("111");
+    counter[*first] = 1;
+    counter[*second] = 1;
+    counter[*first] += 1;
+    counter[*third] += 1;
+    EXPECT_EQ(counter.size(), 2);
+    EXPECT_EQ(counter[*first], 3);
+    EXPECT_EQ(counter[*second], 1);
+    EXPECT_EQ(counter[*third], 3);
+    EXPECT_EQ(counter[*fourth], 0);
+    EXPECT_EQ(counter.size(), 3);
+}
