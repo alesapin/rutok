@@ -11,11 +11,11 @@ using namespace RS::Unicorn;
 using namespace RS::Unicorn::Literals;
 
 TokenInputStream::TokenInputStream(std::istream & is_, size_t buffer_size_)
-    : is(is_)
-    , buffer_size (buffer_size_)
-    , buffer(new char[buffer_size_])
+    : BaseTokenInputStream(buffer_size_)
+    , is(is_)
+    , buffer(new char[buffer_size])
 {
-    if (buffer_size_ == 0)
+    if (buffer_size == 0)
         throw std::runtime_error("Read buffer cannot be empty");
 
 }

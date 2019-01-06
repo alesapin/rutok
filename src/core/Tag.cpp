@@ -28,7 +28,19 @@ std::string toStringSingle(EGraphemTag tag)
     }
 }
 
-std::string toStringSingle(ETokenType tag)
+}
+
+std::string toString(EGraphemTag tag_bag, const std::string & sep)
+{
+    std::ostringstream os;
+    std::vector<EGraphemTag> tags = toTagSet(tag_bag);
+    for (size_t i = 0; i < tags.size() - 1; ++i)
+        os << toStringSingle(tags[i]) << sep;
+    os << toStringSingle(tags.back());
+    return os.str();
+}
+
+std::string toString(ETokenType tag)
 {
     switch(tag)
     {
@@ -41,26 +53,6 @@ std::string toStringSingle(ETokenType tag)
     case ETokenType::HIEROGLYPH: return "HIEROGLYPH";
     case ETokenType::SYMBOL: return "SYMBOL";
     }
-}
-}
-
-std::string toString(EGraphemTag tag_bag, const std::string & sep)
-{
-    std::ostringstream os;
-    std::vector<EGraphemTag> tags = toTagSet(tag_bag);
-    for (size_t i = 0; i < tags.size() - 1; ++i)
-        os << toStringSingle(tags[i]) << sep;
-    os << toStringSingle(tags.back());
-    return os.str();
-}
-std::string toString(ETokenType tag_bag, const std::string & sep)
-{
-    std::ostringstream os;
-    std::vector<ETokenType> tags = toTagSet(tag_bag);
-    for (size_t i = 0; i < tags.size() - 1; ++i)
-        os << toStringSingle(tags[i]) << sep;
-    os << toStringSingle(tags.back());
-    return os.str();
 }
 
 }

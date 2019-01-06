@@ -7,3 +7,6 @@
 [submodule "contrib/span-lite"]
 	path = contrib/span-lite
 	url = https://github.com/martinmoene/span-lite
+[submodule "contrib/rapidjson"]
+	path = contrib/rapidjson
+	url = https://github.com/Tencent/rapidjson

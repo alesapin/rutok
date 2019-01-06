@@ -2,6 +2,8 @@
 #include <unicorn/string.hpp>
 #include <unicorn/character.hpp>
 #include <streams/TokenInputStream.h>
+#include <streams/TokenStringOutputStream.h>
+#include <streams/TokenJSONOutputStream.h>
 #include <sstream>
 
 using namespace RS;
@@ -44,7 +46,7 @@ void test_simple_stream(const std::string & str, size_t buf_size)
     EXPECT_EQ(third->getGraphemTag(), EGraphemTag::LATIN | EGraphemTag::LOWER_CASE);
 }
 
-TEST(TokenStreamTest, WordSequence)
+TEST(TokenInputStreamTest, WordSequence)
 {
     std::string str{"hello beautiful world"};
     test_simple_stream(str, 4096);
@@ -64,7 +66,7 @@ TEST(TokenStreamTest, WordSequence)
     }
 }
 
-TEST(TokenStreamTest, StrangeSequences)
+TEST(TokenInputStreamTest, StrangeSequences)
 {
     auto ss = strToSteam(R"***(Привет, хElLo,>	world,...
 ту156)***");
@@ -123,7 +125,7 @@ TEST(TokenStreamTest, StrangeSequences)
     EXPECT_EQ(hello->getGraphemTag(), EGraphemTag::MIXED_CASE | EGraphemTag::MIX_LANG);
 }
 
-TEST(TokenStreamTest, CornerCases)
+TEST(TokenInputStreamTest, CornerCases)
 {
     std::string long_str(10000, 'q');
     long_str += '\n';
@@ -140,3 +142,62 @@ TEST(TokenStreamTest, CornerCases)
     EXPECT_EQ(newline->getTokenType(), ETokenType::SEPARATOR);
     EXPECT_EQ(newline->getGraphemTag(), EGraphemTag::CAN_TERMINATE_PARAGRAPH);
 }
+
+TEST(TokenOutputStreamTest, SimpleOutput)
+{
+
+    std::string str{"hello beautiful world"};
+    auto ss = strToSteam(str);
+    TokenInputStream strm(ss);
+    std::ostringstream oss;
+    TokenStringOutputStream outstrm(oss, strm);
+    while(outstrm.write());
+    std::string result = R"***([hello, WORD, LATIN, LOWER_CASE]
+[ , SEPARATOR]
+[beautiful, WORD, LATIN, LOWER_CASE]
+[ , SEPARATOR]
+[world, WORD, LATIN, LOWER_CASE])***";
+    EXPECT_EQ(result, oss.str());
+}
+
+TEST(TokenOutputStreamTest, SimpleJSON)
+{
+
+    std::string str{"hello "};
+    auto ss = strToSteam(str);
+    TokenInputStream strm(ss);
+    std::ostringstream oss;
+    TokenJSONOutputStream outstrm(oss, strm, false);
+    outstrm.start();
+    while(outstrm.write());
+    outstrm.finish();
+    std::string result = "[{\"text\":\"hello\",\"token_type\":\"WORD\",\"graphem_tags\":[\"LATIN\",\"LOWER_CASE\"]},{\"text\":\" \",\"token_type\":\"SEPARATOR\",\"graphem_tags\":[]}]";
+    EXPECT_EQ(result, oss.str());
+}
+
+//TEST(TokenOutputStreamTest, PrettyJSON)
+//{
+//
+//    std::string str{"hello "};
+//    auto ss = strToSteam(str);
+//    TokenInputStream strm(ss);
+//    std::ostringstream oss;
+//    TokenJSONOutputStream outstrm(oss, strm, true);
+//    outstrm.start();
+//    while(outstrm.write());
+//    outstrm.finish();
+//    std::cerr << oss.str() << std::endl;
+//    std::string result = R"***([
+//    {
+//        "text": "hello",
+//        "token_type": "WORD",
+//        "graphem_tags": ["LATIN", "LOWER_CASE"]
+//    },
+//    {
+//        "text": " ",
+//        "token_type": "SEPARATOR",
+//        "graphem_tags": []
+//    }
+//])***";
+//    EXPECT_EQ(result, oss.str());
+//}

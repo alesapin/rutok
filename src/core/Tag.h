@@ -85,7 +85,7 @@ inline bool contains(T left, T right) {
 }
 
 std::string toString(EGraphemTag tag, const std::string & sep = ", ");
-std::string toString(ETokenType tag, const std::string & sep = ", ");
+std::string toString(ETokenType tag);
 
 template<typename T>
 inline T exclude(T left, T right) {
@@ -106,6 +106,10 @@ std::vector<T> toTagSet(T tag) {
             result.push_back(static_cast<T>(i));
         }
     }
+
+    if (result.empty())
+        result.push_back(static_cast<T>(0));
+
     return result;
 }
 
