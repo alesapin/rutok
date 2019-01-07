@@ -15,7 +15,8 @@ add_library(rutoklib
   src/streams/TokenInputStream.cpp
   src/streams/TokenStringOutputStream.cpp
   src/streams/TokenJSONOutputStream.cpp
-
+  src/streams/BaseTokenConcatInputStream.cpp
+  src/streams/SmallGroupsTokenConcatInputStream.cpp
 )
 
 target_compile_features(rutoklib PUBLIC cxx_std_17)

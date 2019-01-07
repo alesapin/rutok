@@ -176,7 +176,7 @@ ETokenType detectTokenType(const Ustring & str)
 bool isUpperCaseStr(const Ustring & str)
 {
     for (const auto & sym : utf_range(str))
-        if (sym != '-' && !char_is_uppercase(sym))
+        if (sym != '-' && sym != ' ' && !char_is_uppercase(sym))
             return false;
     return true;
 }
@@ -184,7 +184,7 @@ bool isUpperCaseStr(const Ustring & str)
 bool isLowerCaseStr(const Ustring & str)
 {
     for (const auto & sym : utf_range(str))
-        if (sym != '-' && !char_is_lowercase(sym))
+        if (sym != '-' && sym != ' ' && !char_is_lowercase(sym))
             return false;
     return true;
 }
@@ -198,7 +198,7 @@ bool isTitleCaseStr(const Ustring & str)
         return false;
 
     for (auto it = ++start; it != range.end(); ++it)
-        if (*it != '-' && !char_is_lowercase(*it))
+        if (*it != '-' && *it != ' ' && !char_is_lowercase(*it))
             return false;
     return true;
 }
@@ -207,7 +207,7 @@ bool checkScript(const Ustring & str, const Ustring & scriptname)
 {
     for (const auto & sym : utf_range(str))
     {
-        if (sym != '-' && char_script(sym) != scriptname)
+        if (sym != '-' && sym != ' ' && char_script(sym) != scriptname)
             return false;
     }
     return true;
@@ -375,6 +375,12 @@ TokenPtr Token::concat(const std::vector<TokenPtr> & tokens)
                     graphem_tag |= EGraphemTag::HYPH_WORD;
                     break;
                 }
+            case ETokenType::SEPARATOR:
+                if (token->getLength() == 1 && (*token)[0] == ' ')
+                {
+                    graphem_tag |= EGraphemTag::SPACED;
+                    break;
+                }
             default:
                 type_tag = ETokenType::UNKNOWN;
             }
@@ -392,6 +398,12 @@ TokenPtr Token::concat(const std::vector<TokenPtr> & tokens)
                 if (token->getLength() == 1 && (*token)[0] == '-')
                 {
                     graphem_tag |= EGraphemTag::HYPH_WORD;
+                    break;
+                }
+            case ETokenType::SEPARATOR:
+                if (token->getLength() == 1 && (*token)[0] == ' ')
+                {
+                    graphem_tag |= EGraphemTag::SPACED;
                     break;
                 }
             default:

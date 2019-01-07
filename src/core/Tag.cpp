@@ -25,6 +25,7 @@ std::string toStringSingle(EGraphemTag tag)
     case EGraphemTag::HYPH_WORD: return "HYPH_WORD";
     case EGraphemTag::MIX_LANG: return "MIX_LANG";
     case EGraphemTag::MULTI_SYMBOL: return "MULTI_SYMBOL";
+    case EGraphemTag::SPACED: return "SPACED";
     }
 }
 

@@ -6,24 +6,31 @@ namespace tokenize
 TokenJSONOutputStream::TokenJSONOutputStream(
     std::ostream & os_,
     BaseTokenInputStream & input_,
-    bool pretty)
+    bool pretty_)
     : BaseTokenOutputStream(input_, 0)
     , ows(os_)
+    , pretty(pretty_)
 {
     if (pretty)
-        writer = std::make_shared<PrettyJSONWriter>(ows);
+        writer_ptr = std::make_shared<PrettyJSONWriter>(ows);
     else
-        writer = std::make_shared<JSONWriter>(ows);
+        writer_ptr = std::make_shared<JSONWriter>(ows);
 }
 
 void TokenJSONOutputStream::start()
 {
-    writer->StartArray();
+    if (pretty)
+        std::get<PrettyWriterPtr>(writer_ptr)->StartArray();
+    else
+        std::get<WriterPtr>(writer_ptr)->StartArray();
 }
 
 void TokenJSONOutputStream::finish()
 {
-    writer->EndArray();
+    if (pretty)
+        std::get<PrettyWriterPtr>(writer_ptr)->EndArray();
+    else
+        std::get<WriterPtr>(writer_ptr)->EndArray();
 }
 
 
@@ -37,20 +44,13 @@ bool TokenJSONOutputStream::next()
 
 namespace
 {
-
 void writeString(std::shared_ptr<JSONWriter> writer, const std::string & value)
 {
     writer->String(value.c_str(), value.length());
 }
-}
-
-bool TokenJSONOutputStream::write()
+template <typename T>
+void writeOneToken(T writer, TokenPtr pending)
 {
-    if (pending == nullptr)
-        if (!next())
-            return false;
-
-    /// For last character
     writer->StartObject();
     writer->Key("text");
     writeString(writer, pending->getData());
@@ -64,6 +64,20 @@ bool TokenJSONOutputStream::write()
 
     writer->EndArray();
     writer->EndObject();
+}
+}
+
+bool TokenJSONOutputStream::write()
+{
+    if (pending == nullptr)
+        if (!next())
+            return false;
+
+    if (pretty)
+        writeOneToken(std::get<PrettyWriterPtr>(writer_ptr), pending);
+    else
+        writeOneToken(std::get<WriterPtr>(writer_ptr), pending);
+
     pending = nullptr;
     return true;
 }

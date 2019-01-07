@@ -4,6 +4,7 @@
 #include <streams/TokenInputStream.h>
 #include <streams/TokenStringOutputStream.h>
 #include <streams/TokenJSONOutputStream.h>
+#include <streams/SmallGroupsTokenConcatInputStream.h>
 #include <sstream>
 
 using namespace RS;
@@ -175,29 +176,184 @@ TEST(TokenOutputStreamTest, SimpleJSON)
     EXPECT_EQ(result, oss.str());
 }
 
-//TEST(TokenOutputStreamTest, PrettyJSON)
-//{
-//
-//    std::string str{"hello "};
-//    auto ss = strToSteam(str);
-//    TokenInputStream strm(ss);
-//    std::ostringstream oss;
-//    TokenJSONOutputStream outstrm(oss, strm, true);
-//    outstrm.start();
-//    while(outstrm.write());
-//    outstrm.finish();
-//    std::cerr << oss.str() << std::endl;
-//    std::string result = R"***([
-//    {
-//        "text": "hello",
-//        "token_type": "WORD",
-//        "graphem_tags": ["LATIN", "LOWER_CASE"]
-//    },
-//    {
-//        "text": " ",
-//        "token_type": "SEPARATOR",
-//        "graphem_tags": []
-//    }
-//])***";
-//    EXPECT_EQ(result, oss.str());
-//}
+TEST(TokenOutputStreamTest, PrettyJSON)
+{
+    std::string str{"hello "};
+    auto ss = strToSteam(str);
+    TokenInputStream strm(ss);
+    std::ostringstream oss;
+    TokenJSONOutputStream outstrm(oss, strm, true);
+    outstrm.start();
+    while(outstrm.write());
+    outstrm.finish();
+    std::string result = R"***([
+    {
+        "text":"hello",
+        "token_type":"WORD",
+        "graphem_tags": ["LATIN","LOWER_CASE"
+        ]
+    },
+    {
+        "text":" ",
+        "token_type":"SEPARATOR",
+        "graphem_tags": []
+    }
+])***";
+    EXPECT_EQ(result, oss.str());
+}
+
+
+TEST(TokenConcatInputStreamTest, TestHyphCases)
+{
+    auto ss1 = strToSteam("hello-world");
+    TokenInputStream strm1(ss1);
+    SmallGroupsTokenConcatInputStream concater1(strm1);
+    auto token = concater1.read();
+    EXPECT_TRUE(concater1.eof());
+    EXPECT_EQ(token->getData(), "hello-world");
+    EXPECT_EQ(token->getTokenType(), ETokenType::WORD);
+    EXPECT_EQ(token->getGraphemTag(), EGraphemTag::LATIN | EGraphemTag::LOWER_CASE | EGraphemTag::HYPH_WORD);
+
+    auto ss2 = strToSteam("комсомольск-на-амуре-что-бывает");
+    TokenInputStream strm2(ss2);
+    SmallGroupsTokenConcatInputStream concater2(strm2);
+    auto token1 = concater2.read();
+    EXPECT_TRUE(concater2.eof());
+    EXPECT_EQ(token1->getData(), "комсомольск-на-амуре-что-бывает");
+    EXPECT_EQ(token1->getTokenType(), ETokenType::WORD);
+    EXPECT_EQ(token1->getGraphemTag(), EGraphemTag::CYRILLIC | EGraphemTag::LOWER_CASE | EGraphemTag::HYPH_WORD);
+
+    auto ss3 = strToSteam("комсомольск-на-амуре-что");
+    TokenInputStream strm3(ss3);
+    SmallGroupsTokenConcatInputStream concater3(strm3);
+    auto token2 = concater3.read();
+    EXPECT_TRUE(concater3.eof());
+    EXPECT_EQ(token2->getData(), "комсомольск-на-амуре-что");
+    EXPECT_EQ(token2->getTokenType(), ETokenType::WORD);
+    EXPECT_EQ(token2->getGraphemTag(), EGraphemTag::CYRILLIC | EGraphemTag::LOWER_CASE | EGraphemTag::HYPH_WORD);
+
+    auto ss4 = strToSteam("комсомольск-на-амуре-что-");
+    TokenInputStream strm4(ss4);
+    SmallGroupsTokenConcatInputStream concater4(strm4);
+    auto token4 = concater4.read();
+    auto token5 = concater4.read();
+
+    EXPECT_TRUE(concater4.eof());
+
+    EXPECT_EQ(token4->getData(), "комсомольск-на-амуре-что");
+    EXPECT_EQ(token4->getTokenType(), ETokenType::WORD);
+    EXPECT_EQ(token4->getGraphemTag(), EGraphemTag::CYRILLIC | EGraphemTag::LOWER_CASE | EGraphemTag::HYPH_WORD);
+
+    EXPECT_EQ(token5->getData(), "-");
+    EXPECT_EQ(token5->getTokenType(), ETokenType::PUNCT);
+
+    auto ss5 = strToSteam("комсомольск-на-амуре--xnj");
+    TokenInputStream strm5(ss5);
+    SmallGroupsTokenConcatInputStream concater5(strm5);
+    auto token6 = concater5.read();
+    auto token7 = concater5.read();
+    auto token8 = concater5.read();
+    auto token9 = concater5.read();
+
+    EXPECT_TRUE(concater5.eof());
+
+    EXPECT_EQ(token6->getData(), "комсомольск-на-амуре");
+    EXPECT_EQ(token6->getTokenType(), ETokenType::WORD);
+    EXPECT_EQ(token6->getGraphemTag(), EGraphemTag::CYRILLIC | EGraphemTag::LOWER_CASE | EGraphemTag::HYPH_WORD);
+
+    EXPECT_EQ(token7->getData(), "-");
+    EXPECT_EQ(token7->getTokenType(), ETokenType::PUNCT);
+
+    EXPECT_EQ(token8->getData(), "-");
+    EXPECT_EQ(token8->getTokenType(), ETokenType::PUNCT);
+
+    EXPECT_EQ(token9->getData(), "xnj");
+    EXPECT_EQ(token9->getTokenType(), ETokenType::WORD);
+    EXPECT_EQ(token9->getGraphemTag(), EGraphemTag::LATIN | EGraphemTag::LOWER_CASE);
+
+
+    auto ss6 = strToSteam("-hello-world-156");
+    TokenInputStream strm6(ss6);
+    SmallGroupsTokenConcatInputStream concater6(strm6);
+    auto token10 = concater6.read();
+    auto token11 = concater6.read();
+
+    EXPECT_TRUE(concater6.eof());
+
+    EXPECT_EQ(token10->getData(), "-");
+    EXPECT_EQ(token11->getData(), "hello-world-156");
+    EXPECT_EQ(token11->getTokenType(), ETokenType::WORDNUM);
+    EXPECT_EQ(token11->getGraphemTag(), EGraphemTag::HYPH_WORD);
+}
+
+void testPunctStr(const std::string & str, size_t num_tokens)
+{
+    auto ss1 = strToSteam(str);
+    TokenInputStream strm1(ss1);
+    SmallGroupsTokenConcatInputStream concater1(strm1);
+    while(num_tokens--)
+    {
+        auto token = concater1.read();
+        EXPECT_EQ(token->getData(), "...");
+        EXPECT_EQ(token->getTokenType(), ETokenType::PUNCT);
+        EXPECT_EQ(token->getGraphemTag(), EGraphemTag::MULTI_PUNCT | EGraphemTag::CAN_TERMINATE_SENTENCE);
+    }
+    EXPECT_TRUE(concater1.eof());
+}
+
+
+TEST(TokenConcatInputStreamTest, TestDotCases)
+{
+    testPunctStr("...", 1);
+    testPunctStr("......", 2);
+    testPunctStr(".........", 3);
+
+    auto ss1 = strToSteam("hello.....");
+    TokenInputStream strm1(ss1);
+    SmallGroupsTokenConcatInputStream concater1(strm1);
+
+    auto hello = concater1.read();
+    auto three_dots = concater1.read();
+    auto dot1 = concater1.read();
+    auto dot2 = concater1.read();
+    EXPECT_TRUE(concater1.eof());
+
+    EXPECT_EQ(hello->getData(), "hello");
+    EXPECT_EQ(three_dots->getData(), "...");
+    EXPECT_EQ(dot1->getData(), ".");
+    EXPECT_EQ(*dot1, *dot2);
+}
+
+TEST(TokenConcatInputStreamTest, TestExclQuestion)
+{
+    auto ss1 = strToSteam("hello?!");
+    TokenInputStream strm1(ss1);
+    SmallGroupsTokenConcatInputStream concater1(strm1);
+    auto hello = concater1.read();
+    auto exclq = concater1.read();
+    EXPECT_TRUE(concater1.eof());
+    EXPECT_EQ(hello->getData(), "hello");
+    EXPECT_EQ(exclq->getData(), "?!");
+    EXPECT_EQ(exclq->getTokenType(), ETokenType::PUNCT);
+    EXPECT_EQ(exclq->getGraphemTag(), EGraphemTag::CAN_TERMINATE_SENTENCE | EGraphemTag::MULTI_PUNCT);
+
+    auto ss2 = strToSteam("?!\?\?\?!?");
+    TokenInputStream strm2(ss2);
+    SmallGroupsTokenConcatInputStream concater2(strm2);
+    auto exclq1 = concater2.read();
+    EXPECT_FALSE(concater2.eof());
+    auto question1 = concater2.read();
+    EXPECT_FALSE(concater2.eof());
+    auto question2 = concater2.read();
+    EXPECT_FALSE(concater2.eof());
+    auto exclq2 = concater2.read();
+    EXPECT_FALSE(concater2.eof());
+    auto question3 = concater2.read();
+    EXPECT_TRUE(concater2.eof());
+
+    EXPECT_EQ(*question1, *question2);
+    EXPECT_EQ(*question1, *question3);
+
+    EXPECT_EQ(*exclq1, *exclq2);
+
+}

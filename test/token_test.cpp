@@ -245,8 +245,8 @@ TEST(TokenTest, TestConcat)
     EXPECT_EQ(EGraphemTag::UNKNOWN, merged14->getGraphemTag());
 
     auto merged15 = merge({"Б", " ", "Ю"});
-    EXPECT_EQ(ETokenType::UNKNOWN, merged15->getTokenType());
-    EXPECT_EQ(EGraphemTag::UNKNOWN, merged15->getGraphemTag());
+    EXPECT_EQ(ETokenType::WORD, merged15->getTokenType());
+    EXPECT_EQ(EGraphemTag::SPACED | EGraphemTag::UPPER_CASE | EGraphemTag::CYRILLIC, merged15->getGraphemTag());
 
     auto merged16 = merge({"=", "<", ">"});
     EXPECT_EQ(ETokenType::SYMBOL, merged16->getTokenType());
@@ -259,6 +259,17 @@ TEST(TokenTest, TestConcat)
     auto merged18 = merge({"", "", "", ""});
     EXPECT_EQ(ETokenType::UNKNOWN, merged18->getTokenType());
     EXPECT_EQ(EGraphemTag::UNKNOWN, merged18->getGraphemTag());
+
+    auto merged19 = merge({"В", " ", "А", " ", "С", " ", "Я"});
+    EXPECT_EQ(merged19->getData(), "В А С Я");
+    EXPECT_EQ(ETokenType::WORD, merged19->getTokenType());
+    EXPECT_EQ(EGraphemTag::SPACED | EGraphemTag::UPPER_CASE | EGraphemTag::CYRILLIC, merged19->getGraphemTag());
+
+    auto merged20 = merge({" ", "В", " ", "А", " ", "С", " ", "Я"});
+    EXPECT_EQ(merged20->getData(), " В А С Я");
+    EXPECT_EQ(ETokenType::UNKNOWN, merged20->getTokenType());
+    EXPECT_EQ(EGraphemTag::UNKNOWN, merged20->getGraphemTag());
+
 }
 
 TEST(TokenTest, SimpleHash)
