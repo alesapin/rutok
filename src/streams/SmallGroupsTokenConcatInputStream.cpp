@@ -26,12 +26,8 @@ TokenPtr concatThreeDots(TokenPtr first, TokenPtr second, TokenPtr third)
 
 TokenPtr concatThreeHyphenWords(TokenPtr first, TokenPtr second, TokenPtr third)
 {
-    //std::cerr << "first:" << first->getData() << std::endl;
-    //std::cerr << "second:" << second->getData() << std::endl;
-    //std::cerr << "third:" << third->getData() << std::endl;
     if (second->getData() == "-")
     {
-        //std::cerr << "ENTER\n";
         if (first->getTokenType() == ETokenType::WORD
             && third->getTokenType() == ETokenType::WORD)
         {
@@ -43,7 +39,6 @@ TokenPtr concatThreeHyphenWords(TokenPtr first, TokenPtr second, TokenPtr third)
         else if (first->getTokenType() == ETokenType::WORD
             && third->getTokenType() == ETokenType::NUMBER)
             return Token::concat({first, second, third});
-        //std::cerr << "Bad path\n";
     }
     return nullptr;
 }
@@ -54,8 +49,6 @@ std::tuple<TokenPtr, size_t, bool> concatNHyphenWords(const std::deque<TokenPtr>
     bool possible_more = true;
     for (size_t i = 0; i < window.size(); i += 2)
     {
-        //std::cerr << "I:" << i << std::endl;
-        //std::cerr << "windows_size:" << window.size() << std::endl;
         if (i + 1 == window.size())
         {
             concat_size = static_cast<long>(window.size());
@@ -80,7 +73,6 @@ std::tuple<TokenPtr, size_t, bool> concatNHyphenWords(const std::deque<TokenPtr>
     }
     if (concat_size != 0)
     {
-        //std::cerr << "CONCAT SIZE:" << concat_size << std::endl;
         std::vector<TokenPtr> to_concat(window.begin(), window.begin() + concat_size);
         return {Token::concat(to_concat), concat_size, possible_more};
     }
@@ -91,7 +83,6 @@ std::tuple<TokenPtr, size_t, bool> concatNHyphenWords(const std::deque<TokenPtr>
 
 ConcatResult SmallGroupsTokenConcatInputStream::concat(const std::deque<TokenPtr> & window, bool last)
 {
-    //std::cerr << "WINDOW SIZE:" <<    window.size() << std::endl;
     if (window.size() < 2)
     {
         if (last)

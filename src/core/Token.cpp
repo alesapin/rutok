@@ -52,6 +52,12 @@ size_t Token::getLength() const
     return impl->length;
 }
 
+
+size_t Token::getBytesLength() const
+{
+    return impl->data.length();
+}
+
 bool Token::operator<(const Token & o) const
 {
     return std::make_tuple(impl->length, impl->data, impl->type_tag, impl->graphem_tag) < std::make_tuple(o.impl->length, o.impl->data, o.impl->type_tag, o.impl->graphem_tag);
@@ -441,6 +447,15 @@ TokenPtr Token::concat(const std::vector<TokenPtr> & tokens)
     if (type_tag != ETokenType::UNKNOWN)
         result->impl->graphem_tag = graphem_tag | detectGraphemTag(result->getData(), type_tag, result->getLength());
 
+    return result;
+}
+
+std::shared_ptr<Token> Token::createDefaultSeparator()
+{
+    auto result = std::make_shared<Token>();
+    result->impl = std::make_unique<detail::TokenImpl>();
+    result->impl->type_tag = ETokenType::SEPARATOR;
+    result->impl->data = " ";
     return result;
 }
 

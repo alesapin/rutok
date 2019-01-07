@@ -21,12 +21,14 @@ public:
     EGraphemTag getGraphemTag() const;
     const std::string & getData() const;
     size_t getLength() const;
+    size_t getBytesLength() const;
 
     static std::shared_ptr<Token> createToken(const std::string & data);
     static std::shared_ptr<Token> toUpper(const std::shared_ptr<Token> token);
     static std::shared_ptr<Token> toLower(const std::shared_ptr<Token> token);
     static std::shared_ptr<Token> toTitle(const std::shared_ptr<Token> token);
     static std::shared_ptr<Token> concat(const std::vector<std::shared_ptr<Token>> & tokens);
+    static std::shared_ptr<Token> createDefaultSeparator();
 
     bool operator<(const Token & o) const;
     bool operator>(const Token & o) const;

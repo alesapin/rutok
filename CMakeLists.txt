@@ -12,6 +12,7 @@ add_library(rutoklib
   src/core/charProperties.cpp
   src/core/Tag.cpp
   src/core/Token.cpp
+  src/core/Sentence.cpp
   src/streams/TokenInputStream.cpp
   src/streams/TokenStringOutputStream.cpp
   src/streams/TokenJSONOutputStream.cpp
@@ -31,11 +32,12 @@ add_executable(rutok
 
 target_link_libraries(rutok rutoklib)
 
-add_executable(token_test
+add_executable(testrun
   ${CMAKE_CURRENT_SOURCE_DIR}/test/token_test.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test/token_stream_test.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/sentence_test.cpp
 )
 
 
-target_include_directories(token_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(token_test gtest_main rutoklib)
+target_include_directories(testrun PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(testrun gtest_main rutoklib)

@@ -42,13 +42,10 @@ TokenPtr BaseTokenConcatInputStream::read()
     bool last = in.eof();
 
     ConcatResult conc = concat(pending, last);
-    //std::cerr << "OPSTATUS:" << (conc.operation_status == EConcatStatus::NEED_MORE) << std::endl;
     while (conc.operation_status == EConcatStatus::NEED_MORE)
     {
-        //std::cerr << "LOOPING\n";
         if (!next())
             last = true;
-        //std::cerr << "LAST:" << last << std::endl;
         conc = concat(pending, last);
     }
     TokenPtr result = nullptr;
