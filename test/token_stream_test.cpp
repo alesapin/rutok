@@ -375,7 +375,4 @@ TEST(TokenConcatInputStreamTest, TestExclQuestion)
     EXPECT_EQ(*question1, *question3);
 
     EXPECT_EQ(*exclq1, *exclq2);
-
 }
-
-
