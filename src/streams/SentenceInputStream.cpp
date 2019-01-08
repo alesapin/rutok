@@ -72,17 +72,14 @@ ESentenceStatus isSentenceEndAtSecond(
 
 std::pair<long, ESearchStatus> getWordPositionFrom(const std::deque<TokenPtr> & tokens, long start)
 {
-    std::cerr << "SEARCH FOR WORD FROM:" << start << std::endl;
     for (size_t i = static_cast<size_t>(start); i < tokens.size(); ++i)
     {
-        std::cerr << "Checking token:" << tokens[i]->getData() << std::endl;
         if (tokens[i]->getTokenType() == ETokenType::WORD
             || tokens[i]->getTokenType() == ETokenType::WORDNUM)
             return {static_cast<long>(i), ESearchStatus::FOUND};
         else if (tokens[i]->getTokenType() == ETokenType::PUNCT
             && (contains(tokens[i]->getGraphemTag(), EGraphemTag::CAN_TERMINATE_SENTENCE)
-                || contains(tokens[i]->getGraphemTag(), EGraphemTag::MUST_TERMINATE_SENTENCE)
-                ))
+                || contains(tokens[i]->getGraphemTag(), EGraphemTag::MUST_TERMINATE_SENTENCE)))
             return {-1, ESearchStatus::NOT_FOUND};
     }
 
@@ -91,15 +88,12 @@ std::pair<long, ESearchStatus> getWordPositionFrom(const std::deque<TokenPtr> & 
 
 std::tuple<long, ESearchStatus> getPunctPositionFrom(const std::deque<TokenPtr> & tokens, long start)
 {
-    std::cerr << "SEARCH FOR PUNCT FROM:" << start << std::endl;
     for (size_t i = static_cast<size_t>(start); i < tokens.size(); ++i)
     {
-        std::cerr << "Checking token:" << tokens[i]->getData() << std::endl;
         if (tokens[i]->getTokenType() == ETokenType::PUNCT
             && (
                 contains(tokens[i]->getGraphemTag(), EGraphemTag::MUST_TERMINATE_SENTENCE)
-                || contains(tokens[i]->getGraphemTag(), EGraphemTag::CAN_TERMINATE_SENTENCE)
-               ))
+                || contains(tokens[i]->getGraphemTag(), EGraphemTag::CAN_TERMINATE_SENTENCE)))
             return {static_cast<long>(i), ESearchStatus::FOUND};
         else if (tokens[i]->getTokenType() == ETokenType::WORD
             || tokens[i]->getTokenType() == ETokenType::WORDNUM)
@@ -143,7 +137,6 @@ SentencePtr SentenceInputStream::read()
     SentencePtr result = nullptr;
     while(static_cast<size_t>(start) < pending.size())
     {
-        std::cerr << "pending size:" << pending.size() << std::endl;
         auto [first_word, first_status] = getWordPositionFrom(pending, start);
         if (first_word == -1)
         {
@@ -154,10 +147,6 @@ SentencePtr SentenceInputStream::read()
                 last = true;
                 break;
             }
-        } else
-        {
-            std::cerr << "FIRST WORD INDEX:" << first_word << std::endl;
-            std::cerr << "FIRST WORD:" << pending[static_cast<size_t>(first_word)]->getData() << std::endl;
         }
         auto [second_punct, second_status] = getPunctPositionFrom(pending, first_word + 1);
         if (second_punct == -1)
@@ -177,8 +166,7 @@ SentencePtr SentenceInputStream::read()
                 break;
             }
         }
-        else
-            std::cerr << "SECOND PUNCT:" << pending[static_cast<size_t>(second_punct)]->getData() << std::endl;
+
         auto [third_word, third_status] = getWordPositionFrom(pending, second_punct + 1);
         if (third_word == -1)
         {
@@ -195,18 +183,12 @@ SentencePtr SentenceInputStream::read()
                 break;
             }
         }
-        else
-            std::cerr << "THIRD WORD:" << pending[static_cast<size_t>(third_word)]->getData() << std::endl;
         TokenPtr first = pending[static_cast<size_t>(first_word)];
         TokenPtr second = pending[static_cast<size_t>(second_punct)];
         TokenPtr third = pending[static_cast<size_t>(third_word)];
-        std::cerr << "FIRST:" << first->getData() << std::endl;
-        std::cerr << "SECOND:" << second->getData() << std::endl;
-        std::cerr << "THIRD:" << third->getData() << std::endl;
         if (isSentenceEndAtSecond(first, second, third) == ESentenceStatus::TERMINATES)
         {
             result = buildSentence(pending, static_cast<size_t>(second_punct) + 1);
-            std::cerr << "BUILD RESULT:" << result->asText() << std::endl;
             break;
         }
         else
