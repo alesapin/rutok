@@ -219,10 +219,10 @@ TEST(SentenceTest, LongSentenceInputStreamTest)
 {
     std::ostringstream oss;
     for (size_t i = 0; i < 150; ++i)
-        oss << "qqqqqq ";
+        oss << "qqqqqq q ";
     oss << ". ";
     std::string str = oss.str();
-    std::string part{"hello."};
+    std::string part{"Hello."};
     auto ss = std::istringstream(str + part, std::ios::binary);
     TokenInputStream strm(ss);
     SmallGroupsTokenConcatInputStream concater(strm);
