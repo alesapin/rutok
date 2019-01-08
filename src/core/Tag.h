@@ -29,10 +29,11 @@ enum class EGraphemTag
     TITLE_CASE = 0x20,
     SPACED = 0x40,
     // punct tags
-    CAN_TERMINATE_SENTENCE = 0x80, // . ? ! ...
+    CAN_TERMINATE_SENTENCE = 0x80, // .
     PAIR = 0x100, // { or )
     MULTI_PUNCT = 0x200, // ...
     FAKEPUNCT = 0x400, /// some-word
+    MUST_TERMINATE_SENTENCE = 0x800, // ? ! ...
     // number tags
     NORMAL = 0x80000,
     ROMAN = 0x100000,

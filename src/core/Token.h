@@ -10,7 +10,7 @@ namespace tokenize
 {
 
 namespace detail {
-class TokenImpl;
+struct TokenImpl;
 }
 
 class Token

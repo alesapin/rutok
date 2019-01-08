@@ -31,6 +31,7 @@ void TokenJSONOutputStream::finish()
         std::get<PrettyWriterPtr>(writer_ptr)->EndArray();
     else
         std::get<WriterPtr>(writer_ptr)->EndArray();
+    flush();
 }
 
 
@@ -40,14 +41,24 @@ bool TokenJSONOutputStream::next()
         return false;
 
     pending = input.read();
+    return true;
+}
+
+void TokenJSONOutputStream::flush()
+{
+    if (pretty)
+        std::get<PrettyWriterPtr>(writer_ptr)->Flush();
+    else
+        std::get<WriterPtr>(writer_ptr)->Flush();
 }
 
 namespace
 {
 void writeString(std::shared_ptr<JSONWriter> writer, const std::string & value)
 {
-    writer->String(value.c_str(), value.length());
+    writer->String(value.c_str(), static_cast<uint32_t>(value.length()));
 }
+
 template <typename T>
 void writeOneToken(T writer, TokenPtr pending)
 {

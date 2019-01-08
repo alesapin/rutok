@@ -2,10 +2,11 @@
 #include <algorithm>
 #include <sstream>
 #include <numeric>
+#include <iostream>
 namespace tokenize
 {
 
-Sentence::Sentence(const std::vector<TokenPtr> tokens_)
+Sentence::Sentence(const std::deque<TokenPtr> & tokens_)
     : tokens(tokens_)
 {
 }
@@ -45,6 +46,7 @@ bool Sentence::isEndsCorrectly() const
 {
     if (tokens.empty())
         return true;
+
     TokenPtr last = tokens.back();
     if (last->getTokenType() == ETokenType::PUNCT && last->getData() == "\"")
     {
@@ -54,13 +56,15 @@ bool Sentence::isEndsCorrectly() const
             return false;
     }
     return last->getTokenType() == ETokenType::PUNCT
-        && contains(last->getGraphemTag(), EGraphemTag::CAN_TERMINATE_SENTENCE);
+        && (contains(last->getGraphemTag(), EGraphemTag::CAN_TERMINATE_SENTENCE)
+            || contains(last->getGraphemTag(), EGraphemTag::MUST_TERMINATE_SENTENCE));
 }
 
 bool Sentence::isStartsCorrectly() const
 {
     if (tokens.empty())
         return true;
+
     TokenPtr first = tokens.front();
     if (first->getTokenType() == ETokenType::PUNCT && first->getData() == "\"")
     {
@@ -142,7 +146,7 @@ std::string Sentence::asText() const
 
 Sentence Sentence::toWordsOnly(const Sentence & sentence)
 {
-    std::vector<TokenPtr> new_tokens;
+    std::deque<TokenPtr> new_tokens;
     for (size_t i = 0; i < sentence.tokens.size(); ++i)
     {
         auto token = sentence.tokens[i];

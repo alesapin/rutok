@@ -1,16 +1,17 @@
 #pragma once
 #include <core/Token.h>
-#include <vector>
+#include <deque>
+#include <memory>
 
 namespace tokenize
 {
 class Sentence
 {
 private:
-    std::vector<TokenPtr> tokens;
+    std::deque<TokenPtr> tokens;
 public:
     Sentence() = default;
-    Sentence(const std::vector<TokenPtr> tokens_);
+    Sentence(const std::deque<TokenPtr> & tokens_);
 
     /// Total tokens in sentence
     size_t tokensCount() const;
@@ -41,4 +42,5 @@ public:
 
     static Sentence toWordsOnly(const Sentence & sentence);
 };
+using SentencePtr = std::shared_ptr<Sentence>;
 }

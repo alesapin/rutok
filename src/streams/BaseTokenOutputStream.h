@@ -21,5 +21,6 @@ public:
     virtual bool eos() const = 0;
     virtual void start() {};
     virtual void finish() {};
+    virtual void flush() {};
 };
 }

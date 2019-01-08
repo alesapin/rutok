@@ -39,6 +39,7 @@ public:
     void start() override;
     void finish() override;
     bool eos() const override;
+    void flush() override;
 };
 }
 

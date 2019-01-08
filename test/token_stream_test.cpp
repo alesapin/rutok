@@ -144,6 +144,26 @@ TEST(TokenInputStreamTest, CornerCases)
     EXPECT_EQ(newline->getGraphemTag(), EGraphemTag::CAN_TERMINATE_PARAGRAPH);
 }
 
+TEST(TokenInputStreamTest, TestStrangeCase)
+{
+    auto ss1 = strToSteam("hello.world.by");
+    TokenInputStream concater1(ss1);
+
+    auto hello = concater1.read();
+    auto dot = concater1.read();
+    auto world = concater1.read();
+    auto dot1 = concater1.read();
+    auto by = concater1.read();
+    EXPECT_TRUE(concater1.eof());
+
+    EXPECT_EQ(hello->getData(), "hello");
+    EXPECT_EQ(dot->getData(), ".");
+    EXPECT_EQ(world->getData(), "world");
+    EXPECT_EQ(dot1->getData(), ".");
+    EXPECT_EQ(by->getData(), "by");
+}
+
+
 TEST(TokenOutputStreamTest, SimpleOutput)
 {
 
@@ -296,7 +316,7 @@ void testPunctStr(const std::string & str, size_t num_tokens)
         auto token = concater1.read();
         EXPECT_EQ(token->getData(), "...");
         EXPECT_EQ(token->getTokenType(), ETokenType::PUNCT);
-        EXPECT_EQ(token->getGraphemTag(), EGraphemTag::MULTI_PUNCT | EGraphemTag::CAN_TERMINATE_SENTENCE);
+        EXPECT_EQ(token->getGraphemTag(), EGraphemTag::MULTI_PUNCT | EGraphemTag::MUST_TERMINATE_SENTENCE);
     }
     EXPECT_TRUE(concater1.eof());
 }
@@ -335,7 +355,7 @@ TEST(TokenConcatInputStreamTest, TestExclQuestion)
     EXPECT_EQ(hello->getData(), "hello");
     EXPECT_EQ(exclq->getData(), "?!");
     EXPECT_EQ(exclq->getTokenType(), ETokenType::PUNCT);
-    EXPECT_EQ(exclq->getGraphemTag(), EGraphemTag::CAN_TERMINATE_SENTENCE | EGraphemTag::MULTI_PUNCT);
+    EXPECT_EQ(exclq->getGraphemTag(), EGraphemTag::MUST_TERMINATE_SENTENCE | EGraphemTag::MULTI_PUNCT);
 
     auto ss2 = strToSteam("?!\?\?\?!?");
     TokenInputStream strm2(ss2);
@@ -357,3 +377,5 @@ TEST(TokenConcatInputStreamTest, TestExclQuestion)
     EXPECT_EQ(*exclq1, *exclq2);
 
 }
+
+

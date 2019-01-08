@@ -245,14 +245,20 @@ EGraphemTag detectGraphemTag(const Ustring & str, ETokenType token_type, size_t 
         if (length > 1)
         {
             result |= EGraphemTag::MULTI_PUNCT;
-            if (str_find_first_of("?!.…;", str).valid())
+            if (str_find_first_of("?!…", str).valid())
+                result |= EGraphemTag::MUST_TERMINATE_SENTENCE;
+            else if (!str_search(str, "...").empty())
+                result |= EGraphemTag::MUST_TERMINATE_SENTENCE;
+            else if (str_find_first_of(".;", str).valid())
                 result |= EGraphemTag::CAN_TERMINATE_SENTENCE;
             else if (str_find_first_not_of("(){}[]\"\'", str).valid())
                 result |= EGraphemTag::PAIR;
         }
         else
         {
-            if (str_find_first_of("?!.…;", str).valid())
+            if (str_find_first_of("?!…", str).valid())
+                result |= EGraphemTag::MUST_TERMINATE_SENTENCE;
+            else if (str_find_first_of(".;", str).valid())
                 result |= EGraphemTag::CAN_TERMINATE_SENTENCE;
             else if (str[0] == ')' || str[0] == '(' || str[0] == '{'
                 || str[0] == '}' || str[0] == '[' || str[0] == ']'
@@ -360,6 +366,7 @@ TokenPtr Token::concat(const std::vector<TokenPtr> & tokens)
             case ETokenType::WORD:
             case ETokenType::WORDNUM:
                 type_tag = ETokenType::WORDNUM;
+                break;
             default:
                 type_tag = ETokenType::UNKNOWN;
             }
@@ -381,12 +388,14 @@ TokenPtr Token::concat(const std::vector<TokenPtr> & tokens)
                     graphem_tag |= EGraphemTag::HYPH_WORD;
                     break;
                 }
+                [[fallthrough]];
             case ETokenType::SEPARATOR:
                 if (token->getLength() == 1 && (*token)[0] == ' ')
                 {
                     graphem_tag |= EGraphemTag::SPACED;
                     break;
                 }
+                [[fallthrough]];
             default:
                 type_tag = ETokenType::UNKNOWN;
             }
@@ -406,12 +415,14 @@ TokenPtr Token::concat(const std::vector<TokenPtr> & tokens)
                     graphem_tag |= EGraphemTag::HYPH_WORD;
                     break;
                 }
+                [[fallthrough]];
             case ETokenType::SEPARATOR:
                 if (token->getLength() == 1 && (*token)[0] == ' ')
                 {
                     graphem_tag |= EGraphemTag::SPACED;
                     break;
                 }
+                [[fallthrough]];
             default:
                 type_tag = ETokenType::UNKNOWN;
             }

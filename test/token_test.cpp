@@ -138,13 +138,13 @@ TEST(TokenTest, GraphemInfoPunct)
     std::string dot{"."};
     EXPECT_EQ(EGraphemTag::CAN_TERMINATE_SENTENCE, getGraphemTagViaToken(dot));
     std::string end{"?!…"};
-    EXPECT_EQ(EGraphemTag::MULTI_PUNCT | EGraphemTag::CAN_TERMINATE_SENTENCE, getGraphemTagViaToken(end));
+    EXPECT_EQ(EGraphemTag::MULTI_PUNCT | EGraphemTag::MUST_TERMINATE_SENTENCE, getGraphemTagViaToken(end));
     std::string end1{"…"};
-    EXPECT_EQ(EGraphemTag::CAN_TERMINATE_SENTENCE, getGraphemTagViaToken(end1));
+    EXPECT_EQ(EGraphemTag::MUST_TERMINATE_SENTENCE, getGraphemTagViaToken(end1));
     std::string end2{";"};
     EXPECT_EQ(EGraphemTag::CAN_TERMINATE_SENTENCE, getGraphemTagViaToken(end2));
     std::string end3{"..."};
-    EXPECT_EQ(EGraphemTag::MULTI_PUNCT | EGraphemTag::CAN_TERMINATE_SENTENCE, getGraphemTagViaToken(end3));
+    EXPECT_EQ(EGraphemTag::MULTI_PUNCT | EGraphemTag::MUST_TERMINATE_SENTENCE, getGraphemTagViaToken(end3));
 
     std::string pair1{"{"};
     EXPECT_EQ(EGraphemTag::PAIR, getGraphemTagViaToken(pair1));
@@ -222,7 +222,7 @@ TEST(TokenTest, TestConcat)
 
     auto merged9 = merge({".", ".", "."});
     EXPECT_EQ(ETokenType::PUNCT, merged9->getTokenType());
-    EXPECT_EQ(EGraphemTag::MULTI_PUNCT | EGraphemTag::CAN_TERMINATE_SENTENCE, merged9->getGraphemTag());
+    EXPECT_EQ(EGraphemTag::MULTI_PUNCT | EGraphemTag::MUST_TERMINATE_SENTENCE, merged9->getGraphemTag());
 
     auto merged10 = merge({" ", " ", "    ", " "});
     EXPECT_EQ(ETokenType::SEPARATOR, merged10->getTokenType());

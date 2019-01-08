@@ -20,6 +20,24 @@ TokenInputStream::TokenInputStream(std::istream & is_, size_t buffer_size_)
 
 }
 
+std::vector<std::string> fix_dot(const std::string & word)
+{
+    if (word.length() == 1)
+        return {};
+    bool dot_found = false;
+    bool non_dot_found = false;
+    for (const auto & sym : word)
+    {
+        if (sym != '.')
+            non_dot_found = true;
+        else if (sym == '.')
+            dot_found = true;
+    }
+    if (dot_found && non_dot_found)
+        return str_splitv_by(word, ".");
+    return {};
+}
+
 bool TokenInputStream::next()
 {
 
@@ -39,7 +57,21 @@ bool TokenInputStream::next()
     std::string total = appendix + tmp;
     appendix.clear();
     for (auto & word : word_range(total))
-        segments.push_back(u_str(word));
+    {
+        const auto str_word = u_str(word);
+        auto fixed = fix_dot(str_word);
+        if (!fixed.empty())
+        {
+            for (size_t i = 0; i < fixed.size() - 1; ++i)
+            {
+                segments.push_back(fixed[i]);
+                segments.push_back(".");
+            }
+            segments.push_back(fixed.back());
+        }
+        else
+            segments.push_back(str_word);
+    }
 
     if (!is.eof())
     {

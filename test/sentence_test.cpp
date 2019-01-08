@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <core/Sentence.h>
 #include <streams/TokenInputStream.h>
+#include <streams/SmallGroupsTokenConcatInputStream.h>
+#include <streams/SentenceInputStream.h>
 #include <sstream>
 
 using namespace tokenize;
@@ -68,4 +70,147 @@ TEST(SentenceTest, SimpleFunctionsTest2)
     EXPECT_EQ(words_only_sentence.tokensCount(), 1);
     EXPECT_EQ(words_only_sentence.asText(), "Привет");
     EXPECT_TRUE(words_only_sentence.isWordsOnly());
+}
+
+TEST(SentenceTest, SimpliestSentenceInputStreamTest)
+{
+
+    std::string str{"Hello world. Привет Мир."};
+    auto ss = std::istringstream(str, std::ios::binary);
+    TokenInputStream strm(ss);
+    SmallGroupsTokenConcatInputStream concater(strm);
+    SentenceInputStream sentence_stream(concater);
+
+    auto sentence1 = sentence_stream.read();
+    auto sentence2 = sentence_stream.read();
+    EXPECT_TRUE(sentence_stream.eof());
+
+    EXPECT_EQ(sentence1->asText(), "Hello world.");
+    EXPECT_EQ(sentence2->asText(), "Привет Мир.");
+}
+
+TEST(SentenceTest, AdvancedSentenceInputStreamTest)
+{
+
+    std::string str{"Hello! world.Привет? Мир"};
+    auto ss = std::istringstream(str, std::ios::binary);
+    TokenInputStream strm(ss);
+    SmallGroupsTokenConcatInputStream concater(strm);
+    SentenceInputStream sentence_stream(concater);
+
+    auto sentence1 = sentence_stream.read();
+    auto sentence2 = sentence_stream.read();
+    auto sentence3 = sentence_stream.read();
+    auto sentence4 = sentence_stream.read();
+    EXPECT_TRUE(sentence_stream.eof());
+
+    EXPECT_EQ(sentence1->asText(), "Hello!");
+    EXPECT_EQ(sentence2->asText(), "world.");
+    EXPECT_EQ(sentence3->asText(), "Привет?");
+    EXPECT_EQ(sentence4->asText(), "Мир");
+}
+
+TEST(SentenceTest, HellSentenceInputStreamTest)
+{
+    std::string str{"Hello! world...Привет?Мир!? пока156	привет ...???"};
+    auto ss = std::istringstream(str, std::ios::binary);
+    TokenInputStream strm(ss);
+    SmallGroupsTokenConcatInputStream concater(strm);
+    SentenceInputStream sentence_stream(concater);
+
+    auto sentence1 = sentence_stream.read();
+    auto sentence2 = sentence_stream.read();
+    auto sentence3 = sentence_stream.read();
+    auto sentence4 = sentence_stream.read();
+    auto sentence5 = sentence_stream.read();
+    auto sentence6 = sentence_stream.read();
+    auto sentence7 = sentence_stream.read();
+    auto sentence8 = sentence_stream.read();
+    EXPECT_TRUE(sentence_stream.eof());
+
+    EXPECT_EQ(sentence1->asText(), "Hello!");
+    EXPECT_EQ(sentence2->asText(), "world...");
+    EXPECT_EQ(sentence3->asText(), "Привет?");
+    EXPECT_EQ(sentence4->asText(), "Мир!?");
+    EXPECT_EQ(sentence5->asText(), "пока156	привет ...???");
+}
+
+TEST(SentenceTest, CornerSentenceInputStreamTest)
+{
+    std::string str{"Академик И. П. Павлов и т.д. Ввели понятие."};
+    auto ss = std::istringstream(str, std::ios::binary);
+    TokenInputStream strm(ss);
+    SmallGroupsTokenConcatInputStream concater(strm);
+    SentenceInputStream sentence_stream(concater);
+
+    auto sentence1 = sentence_stream.read();
+    auto sentence2 = sentence_stream.read();
+    EXPECT_TRUE(sentence_stream.eof());
+
+    EXPECT_EQ(sentence1->asText(), "Академик И. П. Павлов и т.д.");
+    EXPECT_EQ(sentence2->asText(), "Ввели понятие.");
+}
+
+TEST(SentenceTest, Corner2SentenceInputStreamTest)
+{
+    std::string str{"И господин И. Костиков. Однако другие считали, что."};
+    auto ss = std::istringstream(str, std::ios::binary);
+    TokenInputStream strm(ss);
+    SmallGroupsTokenConcatInputStream concater(strm);
+    SentenceInputStream sentence_stream(concater);
+
+    auto sentence1 = sentence_stream.read();
+    auto sentence2 = sentence_stream.read();
+    EXPECT_TRUE(sentence_stream.eof());
+
+    EXPECT_EQ(sentence1->asText(), "И господин И. Костиков.");
+    EXPECT_EQ(sentence2->asText(), "Однако другие считали, что.");
+}
+
+TEST(SentenceTest, TrashSentenceInputStreamTest)
+{
+    std::string str{"...several..."};
+    auto ss = std::istringstream(str, std::ios::binary);
+    TokenInputStream strm(ss);
+    SmallGroupsTokenConcatInputStream concater(strm);
+    SentenceInputStream sentence_stream(concater);
+
+    auto sentence1 = sentence_stream.read();
+    EXPECT_TRUE(sentence_stream.eof());
+
+    EXPECT_EQ(sentence1->asText(), "...several...");
+}
+
+TEST(SentenceTest, Trash1SentenceInputStreamTest)
+{
+    std::string str{"The>GOOD!... The<BAD!... The/UGLY!..."};
+    auto ss = std::istringstream(str, std::ios::binary);
+    TokenInputStream strm(ss);
+    SmallGroupsTokenConcatInputStream concater(strm);
+    SentenceInputStream sentence_stream(concater);
+
+    auto sentence1 = sentence_stream.read();
+    auto sentence2 = sentence_stream.read();
+    auto sentence3 = sentence_stream.read();
+    EXPECT_TRUE(sentence_stream.eof());
+
+    EXPECT_EQ(sentence1->asText(), "The>GOOD!...");
+    EXPECT_EQ(sentence2->asText(), "The<BAD!...");
+    EXPECT_EQ(sentence3->asText(), "The/UGLY!...");
+}
+
+TEST(SentenceTest, Trash2SentenceInputStreamTest)
+{
+    std::string str{"Г. М.: М-м-м... Большую частью."};
+    auto ss = std::istringstream(str, std::ios::binary);
+    TokenInputStream strm(ss);
+    SmallGroupsTokenConcatInputStream concater(strm);
+    SentenceInputStream sentence_stream(concater);
+
+    auto sentence1 = sentence_stream.read();
+    auto sentence2 = sentence_stream.read();
+    EXPECT_TRUE(sentence_stream.eof());
+
+    EXPECT_EQ(sentence1->asText(), "Г. М.: М-м-м...");
+    EXPECT_EQ(sentence2->asText(), "Большую частью.");
 }
