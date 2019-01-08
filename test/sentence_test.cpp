@@ -214,3 +214,25 @@ TEST(SentenceTest, Trash2SentenceInputStreamTest)
     EXPECT_EQ(sentence1->asText(), "Г. М.: М-м-м...");
     EXPECT_EQ(sentence2->asText(), "Большую частью.");
 }
+
+TEST(SentenceTest, LongSentenceInputStreamTest)
+{
+    std::ostringstream oss;
+    for (size_t i = 0; i < 150; ++i)
+        oss << "qqqqqq ";
+    oss << ". ";
+    std::string str = oss.str();
+    std::string part{"hello."};
+    auto ss = std::istringstream(str + part, std::ios::binary);
+    TokenInputStream strm(ss);
+    SmallGroupsTokenConcatInputStream concater(strm);
+    SentenceInputStream sentence_stream(concater);
+
+    auto sentence1 = sentence_stream.read();
+    auto sentence2 = sentence_stream.read();
+    EXPECT_TRUE(sentence_stream.eof());
+
+    str.pop_back();
+    EXPECT_EQ(sentence1->asText(), str);
+    EXPECT_EQ(sentence2->asText(), part);
+}

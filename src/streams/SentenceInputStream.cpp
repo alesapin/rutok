@@ -45,8 +45,7 @@ ESentenceStatus isSentenceEndAtSecond(
     if(second_word->getTokenType() != ETokenType::PUNCT
         || (
             !contains(second_word->getGraphemTag(), EGraphemTag::CAN_TERMINATE_SENTENCE)
-            && !contains(second_word->getGraphemTag(), EGraphemTag::MUST_TERMINATE_SENTENCE)
-            )
+            && !contains(second_word->getGraphemTag(), EGraphemTag::MUST_TERMINATE_SENTENCE))
        )
     {
         return ESentenceStatus::NOT_TERMINATES;
