@@ -9,14 +9,33 @@ SmallGroupsTokenConcatInputStream::SmallGroupsTokenConcatInputStream(BaseTokenIn
 
 namespace
 {
-TokenPtr concatExclamatingQuestion(TokenPtr first, TokenPtr second)
+/// TODO clear copypaste
+std::tuple<TokenPtr, size_t, bool> concatExclamatingQuestion(const std::deque<TokenPtr> & window)
 {
-    if (first->getData() == "?" && second->getData() == "!")
-        return Token::concat({first, second});
-    else if (first->getData() == "!" && second->getData() == "?")
-        return Token::concat({first, second});
-    return nullptr;
+    if (window.empty())
+        return {nullptr, 0, true};
+
+    if (window.front()->getData() != "!" && window.front()->getData() != "?")
+        return {nullptr, 0, false};
+
+    size_t to_concat;
+    for (to_concat = 1; to_concat < window.size(); ++to_concat)
+    {
+        if (window[to_concat]->getData() != "?" && window[to_concat]->getData() != "!")
+            break;
+    }
+    if (to_concat == 1)
+        return {nullptr, 0, false};
+
+
+    std::vector<TokenPtr> concated(window.begin(), window.begin() + static_cast<long>(to_concat));
+    auto result = Token::concat(concated);
+    if (to_concat == window.size())
+        return {result, to_concat, true};
+
+    return {result, to_concat, false};
 }
+
 std::tuple<TokenPtr, size_t, bool> concatDots(const std::deque<TokenPtr> & window)
 {
     if (window.empty())
@@ -110,8 +129,10 @@ ConcatResult SmallGroupsTokenConcatInputStream::concat(const std::deque<TokenPtr
             return {EConcatStatus::NEED_MORE, nullptr, 0};
     }
 
-    if (auto token = concatExclamatingQuestion(window[0], window[1]); token)
-        return {EConcatStatus::CONCATED, token, 2};
+    if (auto [excl, excl_size, possible_more_excls] = concatExclamatingQuestion(window); possible_more_excls && !last)
+        return {EConcatStatus::NEED_MORE, nullptr, 0};
+    else if (excl)
+        return {EConcatStatus::CONCATED, excl, excl_size};
 
     if (window.size() < 3)
     {

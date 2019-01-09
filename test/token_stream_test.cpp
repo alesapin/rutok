@@ -354,18 +354,8 @@ TEST(TokenConcatInputStreamTest, TestExclQuestion)
     TokenInputStream strm2(ss2);
     SmallGroupsTokenConcatInputStream concater2(strm2);
     auto exclq1 = concater2.read();
-    EXPECT_FALSE(concater2.eof());
-    auto question1 = concater2.read();
-    EXPECT_FALSE(concater2.eof());
-    auto question2 = concater2.read();
-    EXPECT_FALSE(concater2.eof());
-    auto exclq2 = concater2.read();
-    EXPECT_FALSE(concater2.eof());
-    auto question3 = concater2.read();
     EXPECT_TRUE(concater2.eof());
 
-    EXPECT_EQ(*question1, *question2);
-    EXPECT_EQ(*question1, *question3);
+    EXPECT_EQ(exclq1->getData(), "?!\?\?\?!?");
 
-    EXPECT_EQ(*exclq1, *exclq2);
 }
