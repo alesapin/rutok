@@ -16,9 +16,7 @@ matrix:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
     - os: osx
-      osx_image: xcode8
-      env:
-        - MATRIX_EVAL="brew install gcc cmake && CC=gcc-7 && CXX=g++-7 && brew install cmake"
+      osx_image: xcode10.1
 
 script:
   -  cmake . && make && ./testrun
