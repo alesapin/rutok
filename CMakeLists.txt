@@ -4,8 +4,14 @@ project(rutok LANGUAGES CXX)
 set(CMAKE_CONTRIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/contrib)
 
 add_subdirectory(${CMAKE_CONTRIB_DIR}/unicorn-lib)
+
+SET(INSTALL_GTEST OFF)
+SET(BUILD_GMOCK OFF)
 add_subdirectory(${CMAKE_CONTRIB_DIR}/googletest)
 add_subdirectory(${CMAKE_CONTRIB_DIR}/span-lite)
+
+option(RAPIDJSON_BUILD_DOC OFF)
+option(RAPIDJSON_BUILD_TESTS OFF)
 add_subdirectory(${CMAKE_CONTRIB_DIR}/rapidjson)
 
 add_library(rutoklib
