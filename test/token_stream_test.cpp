@@ -306,42 +306,35 @@ TEST(TokenConcatInputStreamTest, TestHyphCases)
     EXPECT_EQ(token11->getGraphemTag(), EGraphemTag::HYPH_WORD);
 }
 
-void testPunctStr(const std::string & str, size_t num_tokens)
+void testPunctStr(const std::string & str, size_t num_chars)
 {
     auto ss1 = strToSteam(str);
     TokenInputStream strm1(ss1);
     SmallGroupsTokenConcatInputStream concater1(strm1);
-    while(num_tokens--)
-    {
-        auto token = concater1.read();
-        EXPECT_EQ(token->getData(), "...");
-        EXPECT_EQ(token->getTokenType(), ETokenType::PUNCT);
-        EXPECT_EQ(token->getGraphemTag(), EGraphemTag::MULTI_PUNCT | EGraphemTag::MUST_TERMINATE_SENTENCE);
-    }
+    auto token = concater1.read();
+    EXPECT_EQ(token->getData().length(), num_chars);
+    EXPECT_EQ(token->getTokenType(), ETokenType::PUNCT);
+    EXPECT_EQ(token->getGraphemTag(), EGraphemTag::MULTI_PUNCT | EGraphemTag::MUST_TERMINATE_SENTENCE);
     EXPECT_TRUE(concater1.eof());
 }
 
 
 TEST(TokenConcatInputStreamTest, TestDotCases)
 {
-    testPunctStr("...", 1);
-    testPunctStr("......", 2);
-    testPunctStr(".........", 3);
+    testPunctStr("...", 3);
+    testPunctStr("......", 6);
+    testPunctStr(".........", 9);
 
     auto ss1 = strToSteam("hello.....");
     TokenInputStream strm1(ss1);
     SmallGroupsTokenConcatInputStream concater1(strm1);
 
     auto hello = concater1.read();
-    auto three_dots = concater1.read();
-    auto dot1 = concater1.read();
-    auto dot2 = concater1.read();
+    auto five_dots = concater1.read();
     EXPECT_TRUE(concater1.eof());
 
     EXPECT_EQ(hello->getData(), "hello");
-    EXPECT_EQ(three_dots->getData(), "...");
-    EXPECT_EQ(dot1->getData(), ".");
-    EXPECT_EQ(*dot1, *dot2);
+    EXPECT_EQ(five_dots->getData(), ".....");
 }
 
 TEST(TokenConcatInputStreamTest, TestExclQuestion)
