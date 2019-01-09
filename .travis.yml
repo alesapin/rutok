@@ -22,13 +22,13 @@ matrix:
           sources:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
+            - llvm-toolchain-trusty-7
           packages:
-            - clang-6.0
+            - clang-7
             - cmake-data
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
 
 
 script:
