@@ -1,0 +1,26 @@
+language: c++
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - george-edison55-precise-backports
+          packages:
+            - g++-7
+            - cmake-data
+            - cmake
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+    - os: osx
+      osx_image: xcode8
+      env:
+        - MATRIX_EVAL="brew install gcc cmake && CC=gcc-7 && CXX=g++-7 && brew install cmake"
+
+script:
+  -  cmake . && ./testrun
+before_install:
+  - eval "${MATRIX_EVAL}"
