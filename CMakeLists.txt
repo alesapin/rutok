@@ -13,6 +13,7 @@ add_subdirectory(${CMAKE_CONTRIB_DIR}/span-lite)
 
 option(RAPIDJSON_BUILD_DOC OFF)
 option(RAPIDJSON_BUILD_TESTS OFF)
+option(RAPIDJSON_BUILD_EXAMPLES OFF)
 add_subdirectory(${CMAKE_CONTRIB_DIR}/rapidjson)
 
 add_library(rutoklib
