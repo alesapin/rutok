@@ -6,8 +6,8 @@ set(CMAKE_CONTRIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/contrib)
 SET(UNICORN_BUILD_TESTING 0)
 add_subdirectory(${CMAKE_CONTRIB_DIR}/unicorn-lib)
 
-SET(INSTALL_GTEST OFF)
-SET(BUILD_GMOCK OFF)
+option(INSTALL_GTEST OFF)
+option(BUILD_GMOCK OFF)
 add_subdirectory(${CMAKE_CONTRIB_DIR}/googletest)
 add_subdirectory(${CMAKE_CONTRIB_DIR}/span-lite)
 
