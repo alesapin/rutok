@@ -10,3 +10,6 @@
 [submodule "contrib/rapidjson"]
 	path = contrib/rapidjson
 	url = https://github.com/Tencent/rapidjson
+[submodule "contrib/libcharsetdetect"]
+	path = contrib/libcharsetdetect
+	url = https://github.com/batterseapower/libcharsetdetect

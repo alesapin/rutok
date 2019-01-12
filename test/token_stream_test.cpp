@@ -1,10 +1,12 @@
 #include <gtest/gtest.h>
 #include <unicorn/string.hpp>
 #include <unicorn/character.hpp>
+#include <unicorn/mbcs.hpp>
 #include <streams/TokenInputStream.h>
 #include <streams/TokenStringOutputStream.h>
 #include <streams/TokenJSONOutputStream.h>
 #include <streams/SmallGroupsTokenConcatInputStream.h>
+#include <streams/EncodingInputStream.h>
 #include <sstream>
 
 using namespace RS;
@@ -357,5 +359,33 @@ TEST(TokenConcatInputStreamTest, TestExclQuestion)
     EXPECT_TRUE(concater2.eof());
 
     EXPECT_EQ(exclq1->getData(), "?!\?\?\?!?");
+}
+
+void simpleEncodingCheck(const std::string & str, const std::string & readen, size_t buf_size, size_t read_size)
+{
+    auto ss1 = strToSteam(str);
+    EncodingInputStream iss(ss1, buf_size);
+    std::string result;
+    std::string tmp;
+    while(iss.read(tmp, read_size))
+        result += tmp;
+    EXPECT_EQ(result, readen);
+}
+
+TEST(EncodingStreamTest, TestEncoding)
+{
+    simpleEncodingCheck("hello!?", "hello!?", 100, 100);
+    simpleEncodingCheck("привет!?", "привет!?", 100, 100);
+    std::string to_export{"привет!?"};
+    std::string result;
+    export_string(to_export, result, "windows-1251");
+    simpleEncodingCheck(result, to_export, 100, 2);
+    simpleEncodingCheck(result, to_export, 3, 100);
+    simpleEncodingCheck(result, to_export, 3, 1);
+
+    to_export = "абырвлаг";
+    export_string(to_export, result, "KOI8-R");
+
+    simpleEncodingCheck(result, to_export, 100, 100);
 
 }

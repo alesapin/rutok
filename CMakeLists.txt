@@ -10,6 +10,7 @@ option(INSTALL_GTEST OFF)
 option(BUILD_GMOCK OFF)
 add_subdirectory(${CMAKE_CONTRIB_DIR}/googletest)
 add_subdirectory(${CMAKE_CONTRIB_DIR}/span-lite)
+add_subdirectory(${CMAKE_CONTRIB_DIR}/libcharsetdetect)
 
 option(RAPIDJSON_BUILD_DOC OFF)
 option(RAPIDJSON_BUILD_TESTS OFF)
@@ -27,14 +28,17 @@ add_library(rutoklib
   src/streams/BaseTokenConcatInputStream.cpp
   src/streams/SmallGroupsTokenConcatInputStream.cpp
   src/streams/SentenceInputStream.cpp
+  src/streams/EncodingInputStream.cpp
 )
 
 target_compile_features(rutoklib PUBLIC cxx_std_17)
 target_link_libraries(rutoklib RS::Unicorn)
 target_link_libraries(rutoklib span-lite)
+target_link_libraries(rutoklib charsetdetect)
 target_include_directories(rutoklib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(rutoklib PUBLIC ${CMAKE_CONTRIB_DIR}/span-lite/include)
 target_include_directories(rutoklib PUBLIC ${CMAKE_CONTRIB_DIR}/rapidjson/include)
+target_include_directories(rutoklib PUBLIC ${CMAKE_CONTRIB_DIR}/libcharsetdetect)
 
 add_executable(rutok
   ${CMAKE_CURRENT_SOURCE_DIR}/programs/tokenizer/main.cpp)
