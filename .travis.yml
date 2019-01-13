@@ -37,6 +37,6 @@ matrix:
 
 
 script:
-  -  cmake "${CMAKE_FLAGS}" . && make "${MAKE_FLAGS}" && ./testrun
+  - cmake . ${CMAKE_FLAGS} && make ${MAKE_FLAGS} && ./testrun
 before_install:
   - eval "${MATRIX_EVAL}"
