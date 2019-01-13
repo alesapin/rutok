@@ -13,3 +13,6 @@
 [submodule "contrib/libcharsetdetect"]
 	path = contrib/libcharsetdetect
 	url = https://github.com/batterseapower/libcharsetdetect
+[submodule "contrib/sanitizers-cmake"]
+	path = contrib/sanitizers-cmake
+	url = https://github.com/arsenm/sanitizers-cmake

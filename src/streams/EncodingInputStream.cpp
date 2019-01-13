@@ -58,7 +58,8 @@ bool EncodingInputStream::read(std::string & data, size_t max_size)
         tmp.resize(max_size);
         std::memcpy(&tmp[0], buffer.get(), max_size);
         size_t rest = buffer_filled_length - max_size;
-        std::memcpy(buffer.get(), buffer.get() + max_size, rest);
+        // overlapping buffers
+        std::memmove(buffer.get(), buffer.get() + max_size, rest);
         buffer_filled_length = rest;
     }
     else
