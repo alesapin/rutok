@@ -17,7 +17,7 @@ enum class ETokenType
     SYMBOL,
 };
 
-enum class EGraphemTag
+enum class EGraphemTag : uint64_t
 {
     UNKNOWN = 0x0,
     // word tags
@@ -43,6 +43,7 @@ enum class EGraphemTag
     HYPH_WORD = 0x10000000,
     MIX_LANG = 0x20000000,
     MULTI_SYMBOL = 0x40000000,
+    WRAPPED_WORD = 0x80000000,
 };
 
 enum class ESemanticTag

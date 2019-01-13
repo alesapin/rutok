@@ -36,6 +36,7 @@ bool EncodingInputStream::next()
     if (buffer_filled_length == buffer_size)
         return false;
 
+
     is.read(buffer.get() + buffer_filled_length, static_cast<long>(buffer_size - buffer_filled_length));
     buffer_filled_length += static_cast<size_t>(is.gcount());
 

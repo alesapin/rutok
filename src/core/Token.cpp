@@ -182,7 +182,7 @@ ETokenType detectTokenType(const Ustring & str)
 bool isUpperCaseStr(const Ustring & str)
 {
     for (const auto & sym : utf_range(str))
-        if (sym != '-' && sym != ' ' && !char_is_uppercase(sym))
+        if (sym != '-' && sym != ' ' && sym != '\n' && !char_is_uppercase(sym))
             return false;
     return true;
 }
@@ -190,7 +190,7 @@ bool isUpperCaseStr(const Ustring & str)
 bool isLowerCaseStr(const Ustring & str)
 {
     for (const auto & sym : utf_range(str))
-        if (sym != '-' && sym != ' ' && !char_is_lowercase(sym))
+        if (sym != '-' && sym != ' ' && sym != '\n' && !char_is_lowercase(sym))
             return false;
     return true;
 }
@@ -204,7 +204,7 @@ bool isTitleCaseStr(const Ustring & str)
         return false;
 
     for (auto it = ++start; it != range.end(); ++it)
-        if (*it != '-' && *it != ' ' && !char_is_lowercase(*it))
+        if (*it != '-' && *it != ' ' && *it != '\n' && !char_is_lowercase(*it))
             return false;
     return true;
 }
@@ -213,7 +213,7 @@ bool checkScript(const Ustring & str, const Ustring & scriptname)
 {
     for (const auto & sym : utf_range(str))
     {
-        if (sym != '-' && sym != ' ' && char_script(sym) != scriptname)
+        if (sym != '-' && sym != ' ' && sym != '\n' && char_script(sym) != scriptname)
             return false;
     }
     return true;
@@ -342,12 +342,12 @@ std::shared_ptr<Token> Token::toTitle(const std::shared_ptr<Token> token)
 }
 
 
-TokenPtr Token::concat(const std::vector<TokenPtr> & tokens)
+TokenPtr Token::concat(const std::vector<TokenPtr> & tokens, EGraphemTag additional)
 {
     auto result = std::make_shared<Token>();
     result->impl = std::make_unique<detail::TokenImpl>();
     ETokenType type_tag = ETokenType::UNKNOWN;
-    EGraphemTag graphem_tag = EGraphemTag::UNKNOWN;
+    EGraphemTag graphem_tag = additional;
     bool first = true;
     size_t sum_length = 0;
     for (auto token : tokens)
@@ -393,6 +393,11 @@ TokenPtr Token::concat(const std::vector<TokenPtr> & tokens)
                 if (token->getLength() == 1 && (*token)[0] == ' ')
                 {
                     graphem_tag |= EGraphemTag::SPACED;
+                    break;
+                }
+                else if (token->getLength() == 1 && (*token)[0] == '\n')
+                {
+                    graphem_tag |= EGraphemTag::WRAPPED_WORD;
                     break;
                 }
                 [[fallthrough]];

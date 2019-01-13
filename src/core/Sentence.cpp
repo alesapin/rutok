@@ -144,21 +144,22 @@ std::string Sentence::asText() const
     return oss.str();
 }
 
-Sentence Sentence::toWordsOnly(const Sentence & sentence)
+SentencePtr Sentence::toWordsOnly(SentencePtr sentence)
 {
     std::deque<TokenPtr> new_tokens;
-    for (size_t i = 0; i < sentence.tokens.size(); ++i)
+    for (size_t i = 0; i < sentence->tokens.size(); ++i)
     {
-        auto token = sentence.tokens[i];
+        auto token = sentence->tokens[i];
         if (token->getTokenType() == ETokenType::WORD || token->getTokenType() == ETokenType::WORDNUM)
         {
             new_tokens.emplace_back(std::make_shared<Token>(*token));
             new_tokens.emplace_back(Token::createDefaultSeparator());
         }
     }
-    new_tokens.pop_back();
-    Sentence result;
-    result.tokens.swap(new_tokens);
+    if (!new_tokens.empty())
+        new_tokens.pop_back();
+    SentencePtr result = std::make_shared<Sentence>();
+    result->tokens.swap(new_tokens);
     return result;
 }
 }

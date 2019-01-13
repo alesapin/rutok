@@ -40,7 +40,7 @@ public:
     /// Return sentence as text
     std::string asText() const;
 
-    static Sentence toWordsOnly(const Sentence & sentence);
+    static std::shared_ptr<Sentence> toWordsOnly(std::shared_ptr<Sentence> sentence);
 };
 using SentencePtr = std::shared_ptr<Sentence>;
 }

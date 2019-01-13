@@ -1,80 +1,96 @@
-#include <unicorn/library.hpp>
+#include <unicorn/options.hpp>
 #include <cstdlib>
 #include <exception>
 #include <functional>
 #include <iostream>
+#include <fstream>
 #include <map>
 #include <string>
+#include <streams/EncodingInputStream.h>
+#include <streams/TokenInputStream.h>
+#include <streams/EncodingOutputStream.h>
+#include <streams/TokenJSONOutputStream.h>
+#include <streams/SmallGroupsTokenConcatInputStream.h>
+#include <streams/SentenceInputStream.h>
+#include <streams/TokenStringOutputStream.h>
 
 using namespace RS;
 using namespace RS::Unicorn;
-using namespace RS::Unicorn::Literals;
+using namespace tokenize;
+
+using StreamPtr = std::shared_ptr<BaseTokenOutputStream>;
 
 int main(int argc, char** argv)
 try {
 
-    const Ustring description =
-        "This program reads a text file, splits it into words, "
-        "converts each word to normalization form NFC and lower case, "
-        "and writes out a list of all words encountered more than once, "
-        "in descending order of frequency.";
+    const Ustring description{
+        "Tokenizer for russian language and not only."
+        "Can segment sequence of bytes to sequence of tokens."
+        "Also can merge some tokens according to russian grammar and select sentences."
+    };
 
     // Parse the command line options
 
-    Options opt("Unicorn Demo");
+    Options opt("Rutok");
     opt.add(str_wrap(description, 0, 75));
     opt.add("input", "Input file (default is standard input)", Options::abbrev="i", Options::defvalue="-");
     opt.add("output", "Output file (default is standard output)", Options::abbrev="o", Options::defvalue="-");
-    opt.add("encoding", "Input encoding", Options::abbrev="e", Options::defvalue="UTF-8");
+    opt.add("format", "Output format (default is str)", Options::abbrev="f", Options::defvalue="str");
+    opt.add("sentence", "Separate sentences (default is str)", Options::abbrev="s", Options::boolean=false);
+    opt.add("word-only", "Output words only (default is str)", Options::abbrev="w", Options::boolean=false);
 
     if (opt.parse(argc, argv))
         return 0;
 
-    auto input_file = opt.get<Ustring>("input");
-    auto output_file = opt.get<Ustring>("output");
-    auto input_encoding = opt.get<Ustring>("encoding");
-
-    // Read all the words in the input file
-
-    Ustring prev;
-    for (auto & line : read_lines(input_file, IO::standin | IO::notempty | IO::striplf, input_encoding))
+    std::shared_ptr<std::istream> holding_inp_stream = nullptr;
+    std::shared_ptr<std::ostream> holding_out_stream = nullptr;
+    std::istream * inp = &std::cin;
+    std::ostream * out = &std::cout;
+    if (opt.has("input"))
     {
-        auto sentences = sentence_range(line);
-        size_t range_size = range_count(sentences);
-
-        size_t current_sentence = 0;
-        for (auto & sentence : sentences)
-        {
-            if (current_sentence == range_size - 1)
-                prev = u_str(sentence);
-            else
-            {
-                Ustring current;
-                if (prev.back() == '-')
-                    current = current_sentence == 0 ? prev + u_str(sentence) : u_str(sentence);
-                else
-                    current = current_sentence == 0 ? prev + ' ' + u_str(sentence) : u_str(sentence);
-                for (auto & word : word_range(current, Segment::alpha))
-                    std::cout << u_str(word) << ' ';
-                std::cout << std::endl;
-            }
-            current_sentence++;
-        }
-        auto words = word_range(prev, Segment::alpha);
-        size_t words_size = range_count(words);
-        size_t current_word = 0;
-        for (auto & word : words)
-        {
-            std::cout << u_str(word);
-            if (!(current_word == words_size - 1 && prev.back() == '-'))
-                std::cout << ' ';
-            current_word++;
-        }
-
-        if (prev.back() == '.' || prev.back() == '!' || prev.back() == '?' || prev.back() == ':')
-            std::cout << std::endl;
-        prev = "";
+        std::string input_file = opt.get<std::string>("input");
+        holding_inp_stream = std::make_shared<std::ifstream>(input_file, std::ifstream::in);
+        inp = holding_inp_stream.get();
     }
+    if (opt.has("output"))
+    {
+        std::string output_file = opt.get<std::string>("output");
+        holding_out_stream = std::make_shared<std::ofstream>(output_file);
+        out = holding_out_stream.get();
+    }
+
+    EncodingInputStream enc_inp(*inp);
+    TokenInputStream base_strm(enc_inp);
+    SmallGroupsTokenConcatInputStream concater(base_strm);
+
+    /// bad have to rewritten
+    if (opt.has("sentence") && opt.get<bool>("sentence"))
+    {
+        SentenceInputStream sent_inp(concater);
+        while (!sent_inp.eof())
+        {
+            auto sentence = sent_inp.read();
+            if (opt.has("word-only") && opt.get<bool>("word-only"))
+                sentence = Sentence::toWordsOnly(sentence);
+            (*out) << sentence->asText() << std::endl;
+        }
+    }
+    else
+    {
+        EncodingOutputStream out_enc(*out);
+        std::shared_ptr<BaseTokenOutputStream> output_token;
+        if (opt.get<std::string>("format") == "str")
+            output_token = std::make_shared<TokenStringOutputStream>(out_enc, concater);
+        else if (opt.get<std::string>("format") == "json")
+            output_token = std::make_shared<TokenJSONOutputStream>(out_enc, concater);
+        while(!output_token->eos())
+        {
+            std::cerr << "WRITING\n";
+            output_token->write();
+        }
+        output_token->flush();
+    }
+
     return 0;
 
 }

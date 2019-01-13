@@ -27,6 +27,7 @@ std::string toStringSingle(EGraphemTag tag)
     case EGraphemTag::MULTI_SYMBOL: return "MULTI_SYMBOL";
     case EGraphemTag::SPACED: return "SPACED";
     case EGraphemTag::MUST_TERMINATE_SENTENCE: return "MUST_TERMINATE_SENTENCE";
+    case EGraphemTag::WRAPPED_WORD : return "WRAPPED_WORD";
     }
 }
 
