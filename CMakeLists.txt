@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.8.0)
 project(rutok LANGUAGES CXX)
 
+SET(CMAKE_CXX_FLAGS "-std=c++17" ${CMAKE_CXX_FLAGS})
 set(CMAKE_CONTRIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/contrib)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/contrib/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
 
