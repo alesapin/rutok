@@ -49,6 +49,7 @@ add_executable(rutok
   ${CMAKE_CURRENT_SOURCE_DIR}/programs/tokenizer/main.cpp)
 
 target_link_libraries(rutok rutoklib)
+add_sanitizers(rutok)
 
 add_executable(testrun
   ${CMAKE_CURRENT_SOURCE_DIR}/test/token_test.cpp
