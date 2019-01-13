@@ -18,6 +18,7 @@ matrix:
         - MAKE_FLAGS=""
 
     - os: linux
+      dist: xenial
       addons:
         apt:
           sources:
