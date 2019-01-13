@@ -1,8 +1,10 @@
 #pragma once
 #include <streams/BaseTokenOutputStream.h>
+#include <streams/BaseCharOutputStream.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/prettywriter.h>
+#include <sstream>
 #include <string>
 #include <deque>
 #include <iostream>
@@ -22,9 +24,11 @@ class TokenJSONOutputStream : public BaseTokenOutputStream
 {
 private:
     OWrapper ows;
+    std::ostringstream oss;
     TokenPtr pending;
     // methods of both are not polymorphic for some reason
     std::variant<WriterPtr, PrettyWriterPtr> writer_ptr;
+    BaseCharOutputStream & output;
     bool pretty;
 
 protected:
@@ -32,7 +36,7 @@ protected:
 
 public:
     TokenJSONOutputStream(
-        std::ostream & os_,
+        BaseCharOutputStream & output_,
         BaseTokenInputStream & input_,
         bool pretty_=false);
     bool write() override;

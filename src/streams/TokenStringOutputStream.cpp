@@ -4,7 +4,7 @@ namespace tokenize
 {
 
 TokenStringOutputStream::TokenStringOutputStream(
-    std::ostream & os_,
+    BaseCharOutputStream & os_,
     BaseTokenInputStream & input_,
     size_t buffer_size_,
     const std::string & separator_)
@@ -48,7 +48,7 @@ bool TokenStringOutputStream::write()
     if (pending.size() == 1 && input.eof())
         pending.front().pop_back();
 
-    os << pending.front();
+    os.write(pending.front());
     summary_pending_len -= pending.front().length();
     pending.pop_front();
     return true;
@@ -57,5 +57,10 @@ bool TokenStringOutputStream::write()
 bool TokenStringOutputStream::eos() const
 {
     return pending.empty() && input.eof();
+}
+
+void TokenStringOutputStream::flush()
+{
+    os.flush();
 }
 }

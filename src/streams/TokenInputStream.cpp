@@ -10,10 +10,9 @@ using namespace RS;
 using namespace RS::Unicorn;
 using namespace RS::Unicorn::Literals;
 
-TokenInputStream::TokenInputStream(std::istream & is_, size_t buffer_size_)
+TokenInputStream::TokenInputStream(BaseCharInputStream & input_, size_t buffer_size_)
     : BaseTokenInputStream(buffer_size_)
-    , is(is_)
-    , buffer(new char[buffer_size])
+    , input(input_)
 {
     if (buffer_size == 0)
         throw std::runtime_error("Read buffer cannot be empty");
@@ -42,18 +41,14 @@ bool TokenInputStream::next()
 {
 
     /// A lot of redundant copies
-    if (is.eof() && appendix.empty())
+    if (input.eof() && appendix.empty())
         return false;
 
-    size_t buffer_length = 0;
 
-    if (!is.eof())
-    {
-        is.read(buffer.get(), buffer_size);
-        buffer_length += is.gcount();
-    }
+    std::string tmp;
+    if (!input.eof())
+        input.read(tmp, buffer_size);
 
-    std::string tmp(buffer.get(), buffer_length);
     std::string total = appendix + tmp;
     appendix.clear();
     for (auto & word : word_range(total))
@@ -73,7 +68,7 @@ bool TokenInputStream::next()
             segments.push_back(str_word);
     }
 
-    if (!is.eof())
+    if (!input.eof())
     {
         appendix = segments.back();
         segments.pop_back();
@@ -94,6 +89,6 @@ TokenPtr TokenInputStream::read()
 
 bool TokenInputStream::eof() const
 {
-    return is.eof() && appendix.empty() && segments.empty();
+    return input.eof() && appendix.empty() && segments.empty();
 }
 }

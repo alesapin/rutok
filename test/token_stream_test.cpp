@@ -6,22 +6,27 @@
 #include <streams/TokenStringOutputStream.h>
 #include <streams/TokenJSONOutputStream.h>
 #include <streams/SmallGroupsTokenConcatInputStream.h>
+#include <streams/EncodingOutputStream.h>
 #include <streams/EncodingInputStream.h>
 #include <sstream>
 
 using namespace RS;
 using namespace RS::Unicorn;
 using namespace tokenize;
+using IStringStreamPtr = std::shared_ptr<std::istringstream>;
+using EncodingStreamPtr = std::shared_ptr<EncodingInputStream>;
 
-std::istringstream strToSteam(const std::string & str)
+std::pair<EncodingStreamPtr, IStringStreamPtr> strToSteam(const std::string & str)
 {
-    return std::istringstream(str, std::ios::binary);
+    IStringStreamPtr iss = std::make_shared<std::istringstream>(str, std::ios::binary);
+    EncodingStreamPtr result = std::make_shared<EncodingInputStream>(*iss);
+    return std::make_pair(result, iss);
 }
 
 void test_simple_stream(const std::string & str, size_t buf_size)
 {
-    auto ss = strToSteam(str);
-    TokenInputStream strm(ss, buf_size);
+    auto [ss, iss] = strToSteam(str);
+    TokenInputStream strm(*ss, buf_size);
     auto first = strm.read();
     auto space1 = strm.read();
     auto second = strm.read();
@@ -59,8 +64,8 @@ TEST(TokenInputStreamTest, WordSequence)
     test_simple_stream(str, 2);
     test_simple_stream(str, 1);
     try {
-        auto ss = strToSteam(str);
-        TokenInputStream strm{ss, 0};
+        auto [ss, iss] = strToSteam(str);
+        TokenInputStream strm{*ss, 0};
         EXPECT_TRUE(false);
     }
     catch(std::runtime_error & err)
@@ -71,9 +76,9 @@ TEST(TokenInputStreamTest, WordSequence)
 
 TEST(TokenInputStreamTest, StrangeSequences)
 {
-    auto ss = strToSteam(R"***(Привет, хElLo,>	world,...
+    auto [ss, iss] = strToSteam(R"***(Привет, хElLo,>	world,...
 ту156)***");
-    TokenInputStream strm(ss);
+    TokenInputStream strm(*ss);
     auto privet = strm.read();
     auto comma1 = strm.read();
     auto space1 = strm.read();
@@ -132,8 +137,8 @@ TEST(TokenInputStreamTest, CornerCases)
 {
     std::string long_str(10000, 'q');
     long_str += '\n';
-    auto ss = strToSteam(long_str);
-    TokenInputStream strm(ss, 7000);
+    auto [ss, iss] = strToSteam(long_str);
+    TokenInputStream strm(*ss, 7000);
 
     auto qqqq = strm.read();
     auto newline = strm.read();
@@ -148,8 +153,8 @@ TEST(TokenInputStreamTest, CornerCases)
 
 TEST(TokenInputStreamTest, TestStrangeCase)
 {
-    auto ss1 = strToSteam("hello.world.by");
-    TokenInputStream concater1(ss1);
+    auto [ss1, iss] = strToSteam("hello.world.by");
+    TokenInputStream concater1(*ss1);
 
     auto hello = concater1.read();
     auto dot = concater1.read();
@@ -170,16 +175,18 @@ TEST(TokenOutputStreamTest, SimpleOutput)
 {
 
     std::string str{"hello beautiful world"};
-    auto ss = strToSteam(str);
-    TokenInputStream strm(ss);
+    auto [ss, iss] = strToSteam(str);
+    TokenInputStream strm(*ss);
     std::ostringstream oss;
-    TokenStringOutputStream outstrm(oss, strm);
+    EncodingOutputStream encoutput(oss);
+    TokenStringOutputStream outstrm(encoutput, strm);
     while(outstrm.write());
     std::string result = R"***([hello, WORD, LATIN, LOWER_CASE]
 [ , SEPARATOR]
 [beautiful, WORD, LATIN, LOWER_CASE]
 [ , SEPARATOR]
 [world, WORD, LATIN, LOWER_CASE])***";
+    outstrm.flush();
     EXPECT_EQ(result, oss.str());
 }
 
@@ -187,13 +194,15 @@ TEST(TokenOutputStreamTest, SimpleJSON)
 {
 
     std::string str{"hello "};
-    auto ss = strToSteam(str);
-    TokenInputStream strm(ss);
+    auto [ss, iss] = strToSteam(str);
+    TokenInputStream strm(*ss);
     std::ostringstream oss;
-    TokenJSONOutputStream outstrm(oss, strm, false);
+    EncodingOutputStream encoutput(oss);
+    TokenJSONOutputStream outstrm(encoutput, strm, false);
     outstrm.start();
     while(outstrm.write());
     outstrm.finish();
+    outstrm.flush();
     std::string result = "[{\"text\":\"hello\",\"token_type\":\"WORD\",\"graphem_tags\":[\"LATIN\",\"LOWER_CASE\"]},{\"text\":\" \",\"token_type\":\"SEPARATOR\",\"graphem_tags\":[]}]";
     EXPECT_EQ(result, oss.str());
 }
@@ -201,13 +210,15 @@ TEST(TokenOutputStreamTest, SimpleJSON)
 TEST(TokenOutputStreamTest, PrettyJSON)
 {
     std::string str{"hello "};
-    auto ss = strToSteam(str);
-    TokenInputStream strm(ss);
+    auto [ss, iss] = strToSteam(str);
+    TokenInputStream strm(*ss);
     std::ostringstream oss;
-    TokenJSONOutputStream outstrm(oss, strm, true);
+    EncodingOutputStream encoutput(oss);
+    TokenJSONOutputStream outstrm(encoutput, strm, true);
     outstrm.start();
     while(outstrm.write());
     outstrm.finish();
+    outstrm.flush();
     std::string result = R"***([
     {
         "text":"hello",
@@ -227,8 +238,8 @@ TEST(TokenOutputStreamTest, PrettyJSON)
 
 TEST(TokenConcatInputStreamTest, TestHyphCases)
 {
-    auto ss1 = strToSteam("hello-world");
-    TokenInputStream strm1(ss1);
+    auto [ss1, iss1] = strToSteam("hello-world");
+    TokenInputStream strm1(*ss1);
     SmallGroupsTokenConcatInputStream concater1(strm1);
     auto token = concater1.read();
     EXPECT_TRUE(concater1.eof());
@@ -236,8 +247,8 @@ TEST(TokenConcatInputStreamTest, TestHyphCases)
     EXPECT_EQ(token->getTokenType(), ETokenType::WORD);
     EXPECT_EQ(token->getGraphemTag(), EGraphemTag::LATIN | EGraphemTag::LOWER_CASE | EGraphemTag::HYPH_WORD);
 
-    auto ss2 = strToSteam("комсомольск-на-амуре-что-бывает");
-    TokenInputStream strm2(ss2);
+    auto [ss2, iss] = strToSteam("комсомольск-на-амуре-что-бывает");
+    TokenInputStream strm2(*ss2);
     SmallGroupsTokenConcatInputStream concater2(strm2);
     auto token1 = concater2.read();
     EXPECT_TRUE(concater2.eof());
@@ -245,8 +256,8 @@ TEST(TokenConcatInputStreamTest, TestHyphCases)
     EXPECT_EQ(token1->getTokenType(), ETokenType::WORD);
     EXPECT_EQ(token1->getGraphemTag(), EGraphemTag::CYRILLIC | EGraphemTag::LOWER_CASE | EGraphemTag::HYPH_WORD);
 
-    auto ss3 = strToSteam("комсомольск-на-амуре-что");
-    TokenInputStream strm3(ss3);
+    auto [ss3, iss3] = strToSteam("комсомольск-на-амуре-что");
+    TokenInputStream strm3(*ss3);
     SmallGroupsTokenConcatInputStream concater3(strm3);
     auto token2 = concater3.read();
     EXPECT_TRUE(concater3.eof());
@@ -254,8 +265,8 @@ TEST(TokenConcatInputStreamTest, TestHyphCases)
     EXPECT_EQ(token2->getTokenType(), ETokenType::WORD);
     EXPECT_EQ(token2->getGraphemTag(), EGraphemTag::CYRILLIC | EGraphemTag::LOWER_CASE | EGraphemTag::HYPH_WORD);
 
-    auto ss4 = strToSteam("комсомольск-на-амуре-что-");
-    TokenInputStream strm4(ss4);
+    auto [ss4, iss4] = strToSteam("комсомольск-на-амуре-что-");
+    TokenInputStream strm4(*ss4);
     SmallGroupsTokenConcatInputStream concater4(strm4);
     auto token4 = concater4.read();
     auto token5 = concater4.read();
@@ -269,8 +280,8 @@ TEST(TokenConcatInputStreamTest, TestHyphCases)
     EXPECT_EQ(token5->getData(), "-");
     EXPECT_EQ(token5->getTokenType(), ETokenType::PUNCT);
 
-    auto ss5 = strToSteam("комсомольск-на-амуре--xnj");
-    TokenInputStream strm5(ss5);
+    auto [ss5, iss5] = strToSteam("комсомольск-на-амуре--xnj");
+    TokenInputStream strm5(*ss5);
     SmallGroupsTokenConcatInputStream concater5(strm5);
     auto token6 = concater5.read();
     auto token7 = concater5.read();
@@ -294,8 +305,8 @@ TEST(TokenConcatInputStreamTest, TestHyphCases)
     EXPECT_EQ(token9->getGraphemTag(), EGraphemTag::LATIN | EGraphemTag::LOWER_CASE);
 
 
-    auto ss6 = strToSteam("-hello-world-156");
-    TokenInputStream strm6(ss6);
+    auto [ss6, iss6] = strToSteam("-hello-world-156");
+    TokenInputStream strm6(*ss6);
     SmallGroupsTokenConcatInputStream concater6(strm6);
     auto token10 = concater6.read();
     auto token11 = concater6.read();
@@ -310,8 +321,8 @@ TEST(TokenConcatInputStreamTest, TestHyphCases)
 
 void testPunctStr(const std::string & str, size_t num_chars)
 {
-    auto ss1 = strToSteam(str);
-    TokenInputStream strm1(ss1);
+    auto [ss1, iss1] = strToSteam(str);
+    TokenInputStream strm1(*ss1);
     SmallGroupsTokenConcatInputStream concater1(strm1);
     auto token = concater1.read();
     EXPECT_EQ(token->getData().length(), num_chars);
@@ -327,8 +338,8 @@ TEST(TokenConcatInputStreamTest, TestDotCases)
     testPunctStr("......", 6);
     testPunctStr(".........", 9);
 
-    auto ss1 = strToSteam("hello.....");
-    TokenInputStream strm1(ss1);
+    auto [ss1, iss1] = strToSteam("hello.....");
+    TokenInputStream strm1(*ss1);
     SmallGroupsTokenConcatInputStream concater1(strm1);
 
     auto hello = concater1.read();
@@ -341,8 +352,8 @@ TEST(TokenConcatInputStreamTest, TestDotCases)
 
 TEST(TokenConcatInputStreamTest, TestExclQuestion)
 {
-    auto ss1 = strToSteam("hello?!");
-    TokenInputStream strm1(ss1);
+    auto [ss1, iss1] = strToSteam("hello?!");
+    TokenInputStream strm1(*ss1);
     SmallGroupsTokenConcatInputStream concater1(strm1);
     auto hello = concater1.read();
     auto exclq = concater1.read();
@@ -352,8 +363,8 @@ TEST(TokenConcatInputStreamTest, TestExclQuestion)
     EXPECT_EQ(exclq->getTokenType(), ETokenType::PUNCT);
     EXPECT_EQ(exclq->getGraphemTag(), EGraphemTag::MUST_TERMINATE_SENTENCE | EGraphemTag::MULTI_PUNCT);
 
-    auto ss2 = strToSteam("?!\?\?\?!?");
-    TokenInputStream strm2(ss2);
+    auto [ss2, iss2] = strToSteam("?!\?\?\?!?");
+    TokenInputStream strm2(*ss2);
     SmallGroupsTokenConcatInputStream concater2(strm2);
     auto exclq1 = concater2.read();
     EXPECT_TRUE(concater2.eof());
@@ -363,8 +374,8 @@ TEST(TokenConcatInputStreamTest, TestExclQuestion)
 
 void simpleEncodingCheck(const std::string & str, const std::string & readen, size_t buf_size, size_t read_size)
 {
-    auto ss1 = strToSteam(str);
-    EncodingInputStream iss(ss1, buf_size);
+    auto [_, ss1] = strToSteam(str);
+    EncodingInputStream iss(*ss1, buf_size);
     std::string result;
     std::string tmp;
     while(iss.read(tmp, read_size))
@@ -387,5 +398,4 @@ TEST(EncodingStreamTest, TestEncoding)
     export_string(to_export, result, "KOI8-R");
 
     simpleEncodingCheck(result, to_export, 100, 100);
-
 }

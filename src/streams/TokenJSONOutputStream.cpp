@@ -4,11 +4,12 @@ namespace tokenize
 {
 
 TokenJSONOutputStream::TokenJSONOutputStream(
-    std::ostream & os_,
+    BaseCharOutputStream & output_,
     BaseTokenInputStream & input_,
     bool pretty_)
     : BaseTokenOutputStream(input_, 0)
-    , ows(os_)
+    , ows(oss)
+    , output(output_)
     , pretty(pretty_)
 {
     if (pretty)
@@ -46,10 +47,14 @@ bool TokenJSONOutputStream::next()
 
 void TokenJSONOutputStream::flush()
 {
-    if (pretty)
-        std::get<PrettyWriterPtr>(writer_ptr)->Flush();
-    else
-        std::get<WriterPtr>(writer_ptr)->Flush();
+    if (oss.str().length())
+    {
+        output.write(oss.str());
+        oss.str("");
+        oss.clear();
+    }
+
+    output.flush();
 }
 
 namespace
@@ -85,10 +90,18 @@ bool TokenJSONOutputStream::write()
             return false;
 
     if (pretty)
+    {
         writeOneToken(std::get<PrettyWriterPtr>(writer_ptr), pending);
+        std::get<PrettyWriterPtr>(writer_ptr)->Flush();
+    }
     else
+    {
         writeOneToken(std::get<WriterPtr>(writer_ptr), pending);
-
+        std::get<WriterPtr>(writer_ptr)->Flush();
+    }
+    output.write(oss.str());
+    oss.str("");
+    oss.clear();
     pending = nullptr;
     return true;
 }

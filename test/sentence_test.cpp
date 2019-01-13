@@ -3,6 +3,7 @@
 #include <streams/TokenInputStream.h>
 #include <streams/SmallGroupsTokenConcatInputStream.h>
 #include <streams/SentenceInputStream.h>
+#include <streams/EncodingInputStream.h>
 #include <sstream>
 
 using namespace tokenize;
@@ -10,7 +11,8 @@ TEST(SentenceTest, SimpleFunctionsTest)
 {
     std::string str{"Hello world."};
     auto ss = std::istringstream(str, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     auto first = strm.read();
     auto second = strm.read();
     auto third = strm.read();
@@ -43,7 +45,8 @@ TEST(SentenceTest, SimpleFunctionsTest2)
 {
     std::string str{"\"Привет!\""};
     auto ss = std::istringstream(str, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     auto first = strm.read();
     auto second = strm.read();
     auto third = strm.read();
@@ -77,7 +80,8 @@ TEST(SentenceTest, SimpliestSentenceInputStreamTest)
 
     std::string str{"Hello world. Привет Мир."};
     auto ss = std::istringstream(str, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
 
@@ -94,7 +98,8 @@ TEST(SentenceTest, AdvancedSentenceInputStreamTest)
 
     std::string str{"Hello! world.Привет? Мир"};
     auto ss = std::istringstream(str, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
 
@@ -114,7 +119,8 @@ TEST(SentenceTest, HellSentenceInputStreamTest)
 {
     std::string str{"Hello! world...Привет?Мир!? пока156	привет ...???"};
     auto ss = std::istringstream(str, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
 
@@ -139,7 +145,8 @@ TEST(SentenceTest, CornerSentenceInputStreamTest)
 {
     std::string str{"Академик И. П. Павлов и т.д. Ввели понятие."};
     auto ss = std::istringstream(str, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
 
@@ -155,7 +162,8 @@ TEST(SentenceTest, Corner2SentenceInputStreamTest)
 {
     std::string str{"И господин И. Костиков. Однако другие считали, что."};
     auto ss = std::istringstream(str, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
 
@@ -171,7 +179,8 @@ TEST(SentenceTest, TrashSentenceInputStreamTest)
 {
     std::string str{"...several..."};
     auto ss = std::istringstream(str, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
 
@@ -185,7 +194,8 @@ TEST(SentenceTest, Trash1SentenceInputStreamTest)
 {
     std::string str{"The>GOOD!... The<BAD!... The/UGLY!..."};
     auto ss = std::istringstream(str, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
 
@@ -203,7 +213,8 @@ TEST(SentenceTest, Trash2SentenceInputStreamTest)
 {
     std::string str{"Г. М.: М-м-м... Большую частью."};
     auto ss = std::istringstream(str, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
 
@@ -224,7 +235,8 @@ TEST(SentenceTest, LongSentenceInputStreamTest)
     std::string str = oss.str();
     std::string part{"Hello."};
     auto ss = std::istringstream(str + part, std::ios::binary);
-    TokenInputStream strm(ss);
+    EncodingInputStream encss(ss);
+    TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
 

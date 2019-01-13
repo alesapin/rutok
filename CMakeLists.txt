@@ -29,6 +29,7 @@ add_library(rutoklib
   src/streams/SmallGroupsTokenConcatInputStream.cpp
   src/streams/SentenceInputStream.cpp
   src/streams/EncodingInputStream.cpp
+  src/streams/EncodingOutputStream.cpp
 )
 
 target_compile_features(rutoklib PUBLIC cxx_std_17)
