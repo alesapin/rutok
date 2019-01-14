@@ -219,19 +219,15 @@ TEST(TokenOutputStreamTest, PrettyJSON)
     while(outstrm.write());
     outstrm.finish();
     outstrm.flush();
-    std::string result = R"***([
-    {
+    std::string result = R"***([{
         "text":"hello",
         "token_type":"WORD",
-        "graphem_tags": ["LATIN","LOWER_CASE"
-        ]
-    },
-    {
+        "graphem_tags": ["LATIN","LOWER_CASE"]
+    }, {
         "text":" ",
         "token_type":"SEPARATOR",
         "graphem_tags": []
-    }
-])***";
+    }])***";
     EXPECT_EQ(result, oss.str());
 }
 
