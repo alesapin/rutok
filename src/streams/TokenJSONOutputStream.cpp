@@ -13,7 +13,10 @@ TokenJSONOutputStream::TokenJSONOutputStream(
     , pretty(pretty_)
 {
     if (pretty)
+    {
         writer_ptr = std::make_shared<PrettyJSONWriter>(ows);
+        std::get<PrettyWriterPtr>(writer_ptr)->SetFormatOptions(rapidjson::PrettyFormatOptions::kFormatSingleLineArray);
+    }
     else
         writer_ptr = std::make_shared<JSONWriter>(ows);
 }
@@ -47,6 +50,11 @@ bool TokenJSONOutputStream::next()
 
 void TokenJSONOutputStream::flush()
 {
+    if (pretty)
+        std::get<PrettyWriterPtr>(writer_ptr)->Flush();
+    else
+        std::get<WriterPtr>(writer_ptr)->Flush();
+
     if (oss.str().length())
     {
         output.write(oss.str());

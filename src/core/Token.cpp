@@ -249,7 +249,7 @@ EGraphemTag detectGraphemTag(const Ustring & str, ETokenType token_type, size_t 
                 result |= EGraphemTag::MUST_TERMINATE_SENTENCE;
             else if (!str_search(str, "...").empty())
                 result |= EGraphemTag::MUST_TERMINATE_SENTENCE;
-            else if (str_find_first_of(".;", str).valid())
+            else if (str_find_first_of(".;:", str).valid())
                 result |= EGraphemTag::CAN_TERMINATE_SENTENCE;
             else if (str_find_first_not_of("(){}[]\"\'", str).valid())
                 result |= EGraphemTag::PAIR;
@@ -473,6 +473,28 @@ std::shared_ptr<Token> Token::createDefaultSeparator()
     result->impl->type_tag = ETokenType::SEPARATOR;
     result->impl->data = " ";
     return result;
+}
+
+
+std::shared_ptr<Token> Token::refine(std::shared_ptr<Token> token)
+{
+    EGraphemTag token_graphem_tag = token->getGraphemTag();
+    ETokenType token_type = token->getTokenType();
+    if (token_type == ETokenType::WORD && contains(token_graphem_tag, EGraphemTag::SPACED))
+    {
+        std::ostringstream str;
+        for (const auto & chr : token->getData())
+            if (chr != ' ')
+                str << chr;
+        auto result = std::make_shared<Token>();
+        result->impl = std::make_unique<detail::TokenImpl>();
+        result->impl->type_tag = token_type;
+        result->impl->data = str.str();
+        result->impl->graphem_tag = exclude(token_graphem_tag, EGraphemTag::SPACED);
+        return result;
+    }
+    return std::make_shared<Token>(*token);
+
 }
 
 template <class T>

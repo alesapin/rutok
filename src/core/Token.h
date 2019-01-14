@@ -28,6 +28,7 @@ public:
     static std::shared_ptr<Token> toLower(const std::shared_ptr<Token> token);
     static std::shared_ptr<Token> toTitle(const std::shared_ptr<Token> token);
     static std::shared_ptr<Token> concat(const std::vector<std::shared_ptr<Token>> & tokens, EGraphemTag additional=EGraphemTag::UNKNOWN);
+    static std::shared_ptr<Token> refine(std::shared_ptr<Token> token);
     static std::shared_ptr<Token> createDefaultSeparator();
 
     bool operator<(const Token & o) const;

@@ -152,7 +152,7 @@ SentencePtr Sentence::toWordsOnly(SentencePtr sentence)
         auto token = sentence->tokens[i];
         if (token->getTokenType() == ETokenType::WORD || token->getTokenType() == ETokenType::WORDNUM)
         {
-            new_tokens.emplace_back(std::make_shared<Token>(*token));
+            new_tokens.emplace_back(Token::refine(token));
             new_tokens.emplace_back(Token::createDefaultSeparator());
         }
     }

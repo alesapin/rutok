@@ -265,6 +265,11 @@ TEST(TokenTest, TestConcat)
     EXPECT_EQ(ETokenType::WORD, merged19->getTokenType());
     EXPECT_EQ(EGraphemTag::SPACED | EGraphemTag::UPPER_CASE | EGraphemTag::CYRILLIC, merged19->getGraphemTag());
 
+    auto refined = Token::refine(merged19);
+    EXPECT_EQ(refined->getData(), "ВАСЯ");
+    EXPECT_EQ(ETokenType::WORD, refined->getTokenType());
+    EXPECT_EQ(EGraphemTag::UPPER_CASE | EGraphemTag::CYRILLIC, refined->getGraphemTag());
+
     auto merged20 = merge({" ", "В", " ", "А", " ", "С", " ", "Я"});
     EXPECT_EQ(merged20->getData(), " В А С Я");
     EXPECT_EQ(ETokenType::UNKNOWN, merged20->getTokenType());

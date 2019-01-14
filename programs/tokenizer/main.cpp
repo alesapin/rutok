@@ -18,6 +18,12 @@ using namespace RS;
 using namespace RS::Unicorn;
 using namespace tokenize;
 
+bool isFileExists(const std::string & filename)
+{
+    std::ifstream infile(filename);
+    return infile.good();
+}
+
 using StreamPtr = std::shared_ptr<BaseTokenOutputStream>;
 
 int main(int argc, char** argv)
@@ -38,6 +44,7 @@ try {
     opt.add("format", "Output format (default is str)", Options::abbrev="f", Options::defvalue="str");
     opt.add("sentence", "Separate sentences (default is str)", Options::abbrev="s", Options::boolean=false);
     opt.add("word-only", "Output words only (default is str)", Options::abbrev="w", Options::boolean=false);
+    opt.add("pretty", "Output more pretty if possible", Options::abbrev="p", Options::boolean=false);
 
     if (opt.parse(argc, argv))
         return 0;
@@ -49,6 +56,8 @@ try {
     if (opt.has("input"))
     {
         std::string input_file = opt.get<std::string>("input");
+        if (!isFileExists(input_file))
+            throw std::runtime_error("File " + input_file + " doesn't exists");
         holding_inp_stream = std::make_shared<std::ifstream>(input_file, std::ifstream::in);
         inp = holding_inp_stream.get();
     }
@@ -82,12 +91,17 @@ try {
         if (opt.get<std::string>("format") == "str")
             output_token = std::make_shared<TokenStringOutputStream>(out_enc, concater);
         else if (opt.get<std::string>("format") == "json")
-            output_token = std::make_shared<TokenJSONOutputStream>(out_enc, concater);
-        while(!output_token->eos())
         {
-            std::cerr << "WRITING\n";
-            output_token->write();
+            if (opt.has("pretty") && opt.get<bool>("pretty"))
+                output_token = std::make_shared<TokenJSONOutputStream>(out_enc, concater, true);
+            else
+                output_token = std::make_shared<TokenJSONOutputStream>(out_enc, concater, false);
         }
+
+        output_token->start();
+        while(!output_token->eos())
+            output_token->write();
+        output_token->finish();
         output_token->flush();
     }
 
