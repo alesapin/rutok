@@ -102,7 +102,7 @@ bool Sentence::isWordsOnly() const
         });
 }
 
-bool Sentence::isCyrrilyc() const
+bool Sentence::isCyrillic() const
 {
     return std::all_of(
         tokens.begin(),
@@ -136,11 +136,14 @@ bool Sentence::isEmpty() const
 }
 
 
-std::string Sentence::asText() const
+std::string Sentence::asText(bool to_lower) const
 {
     std::ostringstream oss;
     for (auto token : tokens)
-        oss << token->getData();
+        if (to_lower)
+            oss << Token::toLower(token)->getData();
+        else
+            oss << token->getData();
     return oss.str();
 }
 
@@ -150,7 +153,7 @@ SentencePtr Sentence::toWordsOnly(SentencePtr sentence)
     for (size_t i = 0; i < sentence->tokens.size(); ++i)
     {
         auto token = sentence->tokens[i];
-        if (token->getTokenType() == ETokenType::WORD || token->getTokenType() == ETokenType::WORDNUM)
+        if (token->getTokenType() == ETokenType::WORD || token->getTokenType() == ETokenType::WORDNUM || token->getTokenType() == ETokenType::NUMBER)
         {
             new_tokens.emplace_back(Token::refine(token));
             new_tokens.emplace_back(Token::createDefaultSeparator());

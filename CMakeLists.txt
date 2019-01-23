@@ -23,7 +23,7 @@ SET(CMAKE_C_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
 find_package(Sanitizers)
 
 add_library(rutoklib
-  src/core/charProperties.cpp
+  src/properties/charProperties.cpp
   src/core/Tag.cpp
   src/core/Token.cpp
   src/core/Sentence.cpp
@@ -35,6 +35,7 @@ add_library(rutoklib
   src/streams/SentenceInputStream.cpp
   src/streams/EncodingInputStream.cpp
   src/streams/EncodingOutputStream.cpp
+  src/streams/IdenticalConcatInputStream.cpp
 )
 
 target_compile_features(rutoklib PUBLIC cxx_std_17)

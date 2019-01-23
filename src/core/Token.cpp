@@ -1,6 +1,6 @@
 #include "Token.h"
 #include <unicorn/library.hpp>
-#include <core/charProperties.h>
+#include <properties/charProperties.h>
 #include <tuple>
 #include <sstream>
 namespace tokenize

@@ -4,6 +4,7 @@
 #include <streams/SmallGroupsTokenConcatInputStream.h>
 #include <streams/SentenceInputStream.h>
 #include <streams/EncodingInputStream.h>
+#include <streams/IdenticalConcatInputStream.h>
 #include <sstream>
 
 using namespace tokenize;
@@ -28,7 +29,7 @@ TEST(SentenceTest, SimpleFunctionsTest)
     EXPECT_TRUE(s->isStartsCorrectly());
     EXPECT_FALSE(s->isQuoted());
     EXPECT_FALSE(s->isWordsOnly());
-    EXPECT_FALSE(s->isCyrrilyc());
+    EXPECT_FALSE(s->isCyrillic());
     EXPECT_TRUE(s->isLatin());
     EXPECT_FALSE(s->isEmpty());
 
@@ -62,7 +63,7 @@ TEST(SentenceTest, SimpleFunctionsTest2)
     EXPECT_TRUE(s->isStartsCorrectly());
     EXPECT_TRUE(s->isQuoted());
     EXPECT_FALSE(s->isWordsOnly());
-    EXPECT_TRUE(s->isCyrrilyc());
+    EXPECT_TRUE(s->isCyrillic());
     EXPECT_FALSE(s->isLatin());
     EXPECT_FALSE(s->isEmpty());
 
@@ -121,7 +122,8 @@ TEST(SentenceTest, HellSentenceInputStreamTest)
     auto ss = std::istringstream(str, std::ios::binary);
     EncodingInputStream encss(ss);
     TokenInputStream strm(encss);
-    SmallGroupsTokenConcatInputStream concater(strm);
+    IdenticalConcatInputStream strm1(strm);
+    SmallGroupsTokenConcatInputStream concater(strm1);
     SentenceInputStream sentence_stream(concater);
 
     auto sentence1 = sentence_stream.read();
@@ -181,7 +183,8 @@ TEST(SentenceTest, TrashSentenceInputStreamTest)
     auto ss = std::istringstream(str, std::ios::binary);
     EncodingInputStream encss(ss);
     TokenInputStream strm(encss);
-    SmallGroupsTokenConcatInputStream concater(strm);
+    IdenticalConcatInputStream strm1(strm);
+    SmallGroupsTokenConcatInputStream concater(strm1);
     SentenceInputStream sentence_stream(concater);
 
     auto sentence1 = sentence_stream.read();
@@ -196,7 +199,8 @@ TEST(SentenceTest, Trash1SentenceInputStreamTest)
     auto ss = std::istringstream(str, std::ios::binary);
     EncodingInputStream encss(ss);
     TokenInputStream strm(encss);
-    SmallGroupsTokenConcatInputStream concater(strm);
+    IdenticalConcatInputStream strm1(strm);
+    SmallGroupsTokenConcatInputStream concater(strm1);
     SentenceInputStream sentence_stream(concater);
 
     auto sentence1 = sentence_stream.read();
@@ -215,7 +219,8 @@ TEST(SentenceTest, Trash2SentenceInputStreamTest)
     auto ss = std::istringstream(str, std::ios::binary);
     EncodingInputStream encss(ss);
     TokenInputStream strm(encss);
-    SmallGroupsTokenConcatInputStream concater(strm);
+    IdenticalConcatInputStream strm1(strm);
+    SmallGroupsTokenConcatInputStream concater(strm1);
     SentenceInputStream sentence_stream(concater);
 
     auto sentence1 = sentence_stream.read();
@@ -237,7 +242,8 @@ TEST(SentenceTest, LongSentenceInputStreamTest)
     auto ss = std::istringstream(str + part, std::ios::binary);
     EncodingInputStream encss(ss);
     TokenInputStream strm(encss);
-    SmallGroupsTokenConcatInputStream concater(strm);
+    IdenticalConcatInputStream strm1(strm);
+    SmallGroupsTokenConcatInputStream concater(strm1);
     SentenceInputStream sentence_stream(concater);
 
     auto sentence1 = sentence_stream.read();

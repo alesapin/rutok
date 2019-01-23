@@ -31,14 +31,14 @@ public:
     /// Contain tokens with words only
     bool isWordsOnly() const;
     /// All words in sentence are cyrrlic
-    bool isCyrrilyc() const;
+    bool isCyrillic() const;
     /// All words in sentence are latin
     bool isLatin() const;
 
     bool isEmpty() const;
 
     /// Return sentence as text
-    std::string asText() const;
+    std::string asText(bool to_lower=false) const;
 
     static std::shared_ptr<Sentence> toWordsOnly(std::shared_ptr<Sentence> sentence);
 };

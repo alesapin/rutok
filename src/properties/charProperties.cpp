@@ -1,4 +1,4 @@
-#include <core/charProperties.h>
+#include <properties/charProperties.h>
 #include <unicorn/library.hpp>
 namespace tokenize
 {

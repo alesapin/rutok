@@ -45,6 +45,9 @@ try {
     opt.add("sentence", "Separate sentences (default is str)", Options::abbrev="s", Options::boolean=false);
     opt.add("word-only", "Output words only (default is str)", Options::abbrev="w", Options::boolean=false);
     opt.add("pretty", "Output more pretty if possible", Options::abbrev="p", Options::boolean=false);
+    opt.add("cyrillic", "Output only cyrrlic tokens", Options::abbrev="c", Options::boolean=false);
+    opt.add("min-words", "Output sentences more than words", Options::abbrev="m", Options::integer=1);
+    opt.add("to-lower", "Print everything in lowercase", Options::abbrev="l", Options::boolean=false);
 
     if (opt.parse(argc, argv))
         return 0;
@@ -71,6 +74,9 @@ try {
     EncodingInputStream enc_inp(*inp);
     TokenInputStream base_strm(enc_inp);
     SmallGroupsTokenConcatInputStream concater(base_strm);
+    int min_words = opt.get<int>("min-words");
+    bool cyrillic_only = opt.get<bool>("cyrillic");
+    bool to_lower = opt.get<bool>("to-lower");
 
     /// bad have to rewritten
     if (opt.has("sentence") && opt.get<bool>("sentence"))
@@ -81,7 +87,11 @@ try {
             auto sentence = sent_inp.read();
             if (opt.has("word-only") && opt.get<bool>("word-only"))
                 sentence = Sentence::toWordsOnly(sentence);
-            (*out) << sentence->asText() << std::endl;
+            if (sentence->wordsCount() < min_words)
+                continue;
+            if (cyrillic_only && !sentence->isCyrillic())
+                continue;
+            (*out) << sentence->asText(to_lower) << std::endl;
         }
     }
     else

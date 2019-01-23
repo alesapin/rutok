@@ -6,6 +6,7 @@
 #include <streams/TokenStringOutputStream.h>
 #include <streams/TokenJSONOutputStream.h>
 #include <streams/SmallGroupsTokenConcatInputStream.h>
+#include <streams/IdenticalConcatInputStream.h>
 #include <streams/EncodingOutputStream.h>
 #include <streams/EncodingInputStream.h>
 #include <sstream>
@@ -319,7 +320,8 @@ void testPunctStr(const std::string & str, size_t num_chars)
 {
     auto [ss1, iss1] = strToSteam(str);
     TokenInputStream strm1(*ss1);
-    SmallGroupsTokenConcatInputStream concater1(strm1);
+    IdenticalConcatInputStream strm2(strm1);
+    SmallGroupsTokenConcatInputStream concater1(strm2);
     auto token = concater1.read();
     EXPECT_EQ(token->getData().length(), num_chars);
     EXPECT_EQ(token->getTokenType(), ETokenType::PUNCT);
@@ -336,7 +338,8 @@ TEST(TokenConcatInputStreamTest, TestDotCases)
 
     auto [ss1, iss1] = strToSteam("hello.....");
     TokenInputStream strm1(*ss1);
-    SmallGroupsTokenConcatInputStream concater1(strm1);
+    IdenticalConcatInputStream strm2(strm1);
+    SmallGroupsTokenConcatInputStream concater1(strm2);
 
     auto hello = concater1.read();
     auto five_dots = concater1.read();
