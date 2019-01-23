@@ -371,6 +371,31 @@ TEST(TokenConcatInputStreamTest, TestExclQuestion)
     EXPECT_EQ(exclq1->getData(), "?!\?\?\?!?");
 }
 
+TEST(TokenConcatInputStreamTest, TestWordWrap)
+{
+    {
+        auto [ss1, iss1] = strToSteam(R"***(че-
+ловек)***");
+        TokenInputStream strm1(*ss1);
+        IdenticalConcatInputStream strm2(strm1);
+        SmallGroupsTokenConcatInputStream concater1(strm2);
+        auto word = concater1.read();
+        EXPECT_TRUE(concater1.eof());
+        EXPECT_TRUE(contains(word->getGraphemTag(), EGraphemTag::WRAPPED_WORD));
+    }
+    {
+        auto [ss1, iss1] = strToSteam(R"***(че-
+        ловек)***");
+        TokenInputStream strm1(*ss1);
+        IdenticalConcatInputStream strm2(strm1);
+        SmallGroupsTokenConcatInputStream concater1(strm2);
+        auto word = concater1.read();
+        EXPECT_TRUE(concater1.eof());
+        EXPECT_TRUE(contains(word->getGraphemTag(), EGraphemTag::WRAPPED_WORD));
+    }
+
+}
+
 void simpleEncodingCheck(const std::string & str, const std::string & readen, size_t buf_size, size_t read_size)
 {
     auto [_, ss1] = strToSteam(str);

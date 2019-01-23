@@ -11,6 +11,7 @@
 #include <streams/EncodingOutputStream.h>
 #include <streams/TokenJSONOutputStream.h>
 #include <streams/SmallGroupsTokenConcatInputStream.h>
+#include <streams/IdenticalConcatInputStream.h>
 #include <streams/SentenceInputStream.h>
 #include <streams/TokenStringOutputStream.h>
 
@@ -73,7 +74,8 @@ try {
 
     EncodingInputStream enc_inp(*inp);
     TokenInputStream base_strm(enc_inp);
-    SmallGroupsTokenConcatInputStream concater(base_strm);
+    IdenticalConcatInputStream ident(base_strm);
+    SmallGroupsTokenConcatInputStream concater(ident);
     int min_words = opt.get<int>("min-words");
     bool cyrillic_only = opt.get<bool>("cyrillic");
     bool to_lower = opt.get<bool>("to-lower");
