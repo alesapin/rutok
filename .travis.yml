@@ -37,6 +37,6 @@ matrix:
 
 
 script:
-  - cmake . ${CMAKE_FLAGS} && make ${MAKE_FLAGS} && ./testrun && python test/functest/rutok-test.py --binary ./programs/sentizer --path test/functest/sentizer
+  - cmake . ${CMAKE_FLAGS} && make ${MAKE_FLAGS} && test/testrun && python test/functest/rutok-test.py --binary ./programs/sentizer --path test/functest/sentizer
 before_install:
   - eval "${MATRIX_EVAL}"

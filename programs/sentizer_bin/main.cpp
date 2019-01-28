@@ -80,7 +80,6 @@ try
     }
     if (output)
     {
-        std::cerr << "OUTPUT\n";
         std::string output_file = args::get(output);
         holding_out_stream = std::make_shared<std::ofstream>(output_file);
         out = holding_out_stream.get();
