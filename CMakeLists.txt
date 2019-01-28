@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.8.0)
 project(rutok LANGUAGES CXX)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 SET(CMAKE_CXX_FLAGS "-std=c++17" ${CMAKE_CXX_FLAGS})
 set(CMAKE_CONTRIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/contrib)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/contrib/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
@@ -46,20 +51,7 @@ target_include_directories(rutoklib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(rutoklib PUBLIC ${CMAKE_CONTRIB_DIR}/span-lite/include)
 target_include_directories(rutoklib PUBLIC ${CMAKE_CONTRIB_DIR}/rapidjson/include)
 target_include_directories(rutoklib PUBLIC ${CMAKE_CONTRIB_DIR}/libcharsetdetect)
+target_include_directories(rutoklib PUBLIC ${CMAKE_CONTRIB_DIR}/args)
 
-add_executable(rutok
-  ${CMAKE_CURRENT_SOURCE_DIR}/programs/tokenizer/main.cpp)
-
-target_link_libraries(rutok rutoklib)
-add_sanitizers(rutok)
-
-add_executable(testrun
-  ${CMAKE_CURRENT_SOURCE_DIR}/test/token_test.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test/token_stream_test.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test/sentence_test.cpp
-)
-
-
-target_include_directories(testrun PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(testrun gtest_main rutoklib)
-add_sanitizers(testrun)
+add_subdirectory(programs)
+add_subdirectory(test)

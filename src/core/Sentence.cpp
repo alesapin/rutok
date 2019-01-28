@@ -136,12 +136,14 @@ bool Sentence::isEmpty() const
 }
 
 
-std::string Sentence::asText(bool to_lower) const
+std::string Sentence::asText(bool to_lower, bool to_upper) const
 {
     std::ostringstream oss;
     for (auto token : tokens)
         if (to_lower)
             oss << Token::toLower(token)->getData();
+        else if (to_upper)
+            oss << Token::toUpper(token)->getData();
         else
             oss << token->getData();
     return oss.str();

@@ -38,7 +38,7 @@ public:
     bool isEmpty() const;
 
     /// Return sentence as text
-    std::string asText(bool to_lower=false) const;
+    std::string asText(bool to_lower=false, bool to_upper=false) const;
 
     static std::shared_ptr<Sentence> toWordsOnly(std::shared_ptr<Sentence> sentence);
 };

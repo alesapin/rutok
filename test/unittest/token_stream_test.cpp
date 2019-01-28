@@ -381,6 +381,7 @@ TEST(TokenConcatInputStreamTest, TestWordWrap)
         SmallGroupsTokenConcatInputStream concater1(strm2);
         auto word = concater1.read();
         EXPECT_TRUE(concater1.eof());
+        EXPECT_EQ(word->getData(), "человек");
         EXPECT_TRUE(contains(word->getGraphemTag(), EGraphemTag::WRAPPED_WORD));
     }
     {
@@ -391,7 +392,23 @@ TEST(TokenConcatInputStreamTest, TestWordWrap)
         SmallGroupsTokenConcatInputStream concater1(strm2);
         auto word = concater1.read();
         EXPECT_TRUE(concater1.eof());
+        EXPECT_EQ(word->getData(), "человек");
         EXPECT_TRUE(contains(word->getGraphemTag(), EGraphemTag::WRAPPED_WORD));
+    }
+    {
+        auto [ss1, iss1] = strToSteam(R"***(когда находится че-
+ловек в изоляции, а приговора еще нет.)***");
+        TokenInputStream strm1(*ss1);
+        IdenticalConcatInputStream strm2(strm1);
+        SmallGroupsTokenConcatInputStream concater1(strm2);
+        auto word1 = concater1.read();
+        auto sepr = concater1.read();
+        auto word2 = concater1.read();
+        auto sepr2 = concater1.read();
+        auto word3 = concater1.read();
+        EXPECT_TRUE(contains(word3->getGraphemTag(), EGraphemTag::WRAPPED_WORD));
+        EXPECT_EQ(word3->getData(), "человек");
+
     }
 
 }

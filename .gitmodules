@@ -16,3 +16,6 @@
 [submodule "contrib/sanitizers-cmake"]
 	path = contrib/sanitizers-cmake
 	url = https://github.com/arsenm/sanitizers-cmake
+[submodule "contrib/args"]
+	path = contrib/args
+	url = https://github.com/Taywee/args
