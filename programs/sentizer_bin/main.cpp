@@ -90,8 +90,10 @@ try
     IdenticalConcatInputStream ident(base_strm);
     SmallGroupsTokenConcatInputStream concater(ident);
     SentenceInputStream sent_inp(concater);
+    std::unique_ptr<EncodingOutputStream> strm = nullptr;
 
     int min_words_num = args::get(min_words);
+    std::string encoding;
     while (!sent_inp.eof())
     {
         auto sentence = sent_inp.read();
@@ -105,8 +107,16 @@ try
         if (word_only)
             sentence = Sentence::toWordsOnly(sentence);
 
-        (*out) << sentence->asText(args::get(lower), args::get(upper)) << std::endl;
+        if (encoding.empty())
+        {
+            encoding = enc_inp.getEncoding();
+            strm = std::make_unique<EncodingOutputStream>(*out, 4096, encoding);
+        }
+
+        strm->write(sentence->asText(args::get(lower), args::get(upper)) + "\n");
     }
+    if (strm)
+        strm->flush();
 }
 catch (const std::exception& ex)
 {
