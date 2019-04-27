@@ -51,7 +51,8 @@ private:
     std::unique_ptr<detail::TokenImpl> impl;
 };
 
-struct TokenHasher {
+struct TokenHasher
+{
     size_t operator()(const Token & token) const;
 };
 

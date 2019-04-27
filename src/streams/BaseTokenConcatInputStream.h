@@ -38,6 +38,7 @@ protected:
 
 public:
     BaseTokenConcatInputStream(BaseTokenInputStream & in_, size_t approx_window_size_=3);
+    size_t alreadyReadBytes() const override { return in.alreadyReadBytes(); }
     TokenPtr read() override;
     bool eof() const override;
 };

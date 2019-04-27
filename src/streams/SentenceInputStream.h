@@ -16,6 +16,7 @@ protected:
 public:
     SentenceInputStream(BaseTokenInputStream & is_, size_t approximate_sentence_size_=6);
     SentencePtr read();
+    size_t alreadyReadBytes() const { return is.alreadyReadBytes(); }
     bool eof() const;
 };
 

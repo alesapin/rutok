@@ -22,6 +22,7 @@ protected:
 public:
     TokenInputStream(BaseCharInputStream & input_, size_t buffer_size_ = 4096);
     TokenPtr read() override;
+    size_t alreadyReadBytes() const override { return input.alreadyReadBytes(); }
     bool eof() const override;
 
 };

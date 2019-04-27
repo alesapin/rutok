@@ -80,7 +80,7 @@ try {
     bool cyrillic_only = opt.get<bool>("cyrillic");
     bool to_lower = opt.get<bool>("to-lower");
 
-    /// bad have to rewritten
+    /// bad, have to rewritten
     if (opt.has("sentence") && opt.get<bool>("sentence"))
     {
         SentenceInputStream sent_inp(concater);
