@@ -69,27 +69,53 @@ try {
         "Also can merge some tokens according to russian grammar and select sentences."
     };
 
-    // Parse the command line options
-
-
     args::ArgumentParser parser(description);
+
     args::HelpFlag help(parser, "help",
         "Print info about commands and some examples", {'h', "help"});
-    args::ValueFlag<std::string> input(parser, "input", "Input file name", {'i', "input"});
-    args::ValueFlag<std::string> output(parser, "output", "Output file name", {'o', "output"});
-    args::ValueFlag<std::string> format(parser, "format", "Output format name", {'f', "format"}, "str");
-    args::Flag word_only(parser, "word-only", "Output only words", {'w', "word-only"});
-    args::Flag pretty(parser, "pretty", "Output in pretty format if possible", {'p', "pretty"});
+
+    args::ValueFlag<std::string> input(
+        parser, "input", "Input file name", {'i', "input"});
+
+    args::ValueFlag<std::string> output(
+        parser, "output", "Output file name", {'o', "output"});
+
+    args::ValueFlag<std::string> format(
+        parser, "format",
+        "Output format name",
+        {'f', "format"},
+        "str");
+
+    args::Flag word_only(
+        parser, "word-only",
+        "Output only words",
+        {'w', "word-only"});
+
+    args::Flag pretty(
+        parser, "pretty",
+        "Output in pretty format if possible",
+        {'p', "pretty"});
+
     args::ValueFlag<int> min_words(
-        parser,
-        "min-words",
+        parser, "min-words",
         "Output sentences contains at least n words",
         {'m', "min-words"},
         -1);
 
-    args::Flag cyrillic(parser, "cyrillic", "Output only cyrillic words", {'c', "cyrillic"});
-    args::Flag latin(parser, "latin", "Output only latin words", {'l', "latin"});
-    args::Flag sentence(parser, "sentence", "Detect sentences", {'s', "sentence"});
+    args::Flag cyrillic(
+        parser, "cyrillic",
+        "Output only cyrillic words",
+        {'c', "cyrillic"});
+
+    args::Flag latin(
+        parser, "latin",
+        "Output only latin words",
+        {'l', "latin"});
+
+    args::Flag sentence(
+        parser, "sentence",
+        "Detect sentences",
+        {'s', "sentence"});
 
     try
     {
