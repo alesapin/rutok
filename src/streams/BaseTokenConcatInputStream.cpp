@@ -28,9 +28,13 @@ bool BaseTokenConcatInputStream::next()
         return false;
 
     for (size_t i = 0; i < approx_window_size && !in.eof(); ++i)
-        pending.push_back(in.read());
+    {
+        auto res = in.read();
+        if (res != nullptr)
+            pending.push_back(res);
+    }
 
-    return true;
+    return !pending.empty();
 }
 
 TokenPtr BaseTokenConcatInputStream::read()

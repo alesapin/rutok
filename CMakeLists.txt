@@ -41,6 +41,9 @@ add_library(rutoklib
   src/streams/EncodingInputStream.cpp
   src/streams/EncodingOutputStream.cpp
   src/streams/IdenticalConcatInputStream.cpp
+  src/streams/SentenceJSONOutputStream.cpp
+  src/streams/SentenceStringOutputStream.cpp
+  src/streams/BaseSentenceOutputStream.cpp
 )
 
 target_compile_features(rutoklib PUBLIC cxx_std_17)

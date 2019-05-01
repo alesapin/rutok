@@ -19,7 +19,9 @@ public:
     char32_t operator[](size_t index) const;
     ETokenType getTokenType() const;
     EGraphemTag getGraphemTag() const;
+    ESemanticTag getSemanticTag() const;
     const std::string & getData() const;
+    std::string getEscapedData() const;
     size_t getLength() const;
     size_t getBytesLength() const;
 
@@ -41,6 +43,10 @@ public:
     bool isUpper() const;
     bool isLower() const;
     bool isTitle() const;
+    bool isLatin() const;
+    bool isCyrillic() const;
+
+    void setSemanticTag(ESemanticTag tag);
 
     Token() = default;
     ~Token();

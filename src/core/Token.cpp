@@ -16,6 +16,7 @@ struct TokenImpl
     size_t length;
     ETokenType type_tag = ETokenType::UNKNOWN;
     EGraphemTag graphem_tag = EGraphemTag::UNKNOWN;
+    ESemanticTag semantic_tag = ESemanticTag::UNKNOWN;
     char32_t at(size_t i) const
     {
         return str_char_at(data, i);
@@ -42,9 +43,37 @@ EGraphemTag Token::getGraphemTag() const
     return impl->graphem_tag;
 }
 
+
+ESemanticTag Token::getSemanticTag() const
+{
+    return impl->semantic_tag;
+}
+
 const std::string & Token::getData() const
 {
     return impl->data;
+}
+
+std::string Token::getEscapedData() const
+{
+    std::ostringstream oss;
+    for (std::string::const_iterator i = impl->data.begin(), end = impl->data.end(); i != end; ++i) {
+        unsigned char c = *i;
+        if (' ' <= c and c <= '~' and c != '\\' and c != '"') {
+            oss << c;
+        }
+        else {
+            switch(c) {
+            case '"':  oss << '\\' << '"';  break;
+            case '\\': oss << '\\' << '\\'; break;
+            case '\t': oss << '\\' << 't';  break;
+            case '\r': oss << '\\' << 'r';  break;
+            case '\n': oss << '\\' << 'n';  break;
+            default: oss << c;
+            }
+        }
+    }
+    return oss.str();
 }
 
 size_t Token::getLength() const
@@ -74,6 +103,7 @@ bool Token::operator==(const Token & o) const
         getLength() == o.getLength()
         && getGraphemTag() == o.getGraphemTag()
         && getTokenType() == o.getTokenType()
+        && getSemanticTag() == o.getSemanticTag()
         && getData() == o.getData();
 }
 
@@ -89,6 +119,7 @@ bool Token::equalsIgnoreCase(const Token & o) const
     return getLength() == o.getLength()
         && getGraphemTag() == o.getGraphemTag()
         && getTokenType() == o.getTokenType()
+        && getSemanticTag() == o.getSemanticTag()
         && cmp_ei(getData(), o.getData());
 }
 
@@ -115,6 +146,11 @@ bool Token::isLower() const
 bool Token::isTitle() const
 {
     return contains(getGraphemTag(), EGraphemTag::TITLE_CASE);
+}
+
+void Token::setSemanticTag(ESemanticTag tag)
+{
+    impl->semantic_tag = tag;
 }
 
 Token::Token(const Token & other)
@@ -474,6 +510,23 @@ std::shared_ptr<Token> Token::createDefaultSeparator()
     result->impl->data = " ";
     return result;
 }
+
+bool Token::isLatin() const
+{
+    if (getTokenType() == ETokenType::WORD
+        || getTokenType() == ETokenType::WORDNUM)
+        return contains(getGraphemTag(), EGraphemTag::LATIN);
+    return true;
+}
+
+bool Token::isCyrillic() const
+{
+    if (getTokenType() == ETokenType::WORD
+        || getTokenType() == ETokenType::WORDNUM)
+        return contains(getGraphemTag(), EGraphemTag::CYRILLIC);
+    return true;
+}
+
 
 
 std::shared_ptr<Token> Token::refine(std::shared_ptr<Token> token)

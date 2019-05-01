@@ -25,24 +25,21 @@ class TokenJSONOutputStream : public BaseTokenOutputStream
 private:
     OWrapper ows;
     std::ostringstream oss;
-    TokenPtr pending;
     // methods of both are not polymorphic for some reason
     std::variant<WriterPtr, PrettyWriterPtr> writer_ptr;
     BaseCharOutputStream & output;
     bool pretty;
 
 protected:
-    bool next() override;
+    bool next(TokenPtr token) override;
 
 public:
     TokenJSONOutputStream(
         BaseCharOutputStream & output_,
-        BaseTokenInputStream & input_,
         bool pretty_=false);
-    bool write() override;
+    void write(TokenPtr token) override;
     void start() override;
     void finish() override;
-    bool eos() const override;
     void flush() override;
 };
 }

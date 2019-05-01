@@ -5,9 +5,8 @@ namespace tokenize
 
 TokenJSONOutputStream::TokenJSONOutputStream(
     BaseCharOutputStream & output_,
-    BaseTokenInputStream & input_,
     bool pretty_)
-    : BaseTokenOutputStream(input_, 0)
+    : BaseTokenOutputStream(0)
     , ows(oss)
     , output(output_)
     , pretty(pretty_)
@@ -35,16 +34,11 @@ void TokenJSONOutputStream::finish()
         std::get<PrettyWriterPtr>(writer_ptr)->EndArray();
     else
         std::get<WriterPtr>(writer_ptr)->EndArray();
-    flush();
 }
 
 
-bool TokenJSONOutputStream::next()
+bool TokenJSONOutputStream::next(TokenPtr token)
 {
-    if (input.eof())
-        return false;
-
-    pending = input.read();
     return true;
 }
 
@@ -55,11 +49,11 @@ void TokenJSONOutputStream::flush()
     else
         std::get<WriterPtr>(writer_ptr)->Flush();
 
-    if (oss.str().length())
+    if (oss)
     {
         output.write(oss.str());
-        oss.str("");
         oss.clear();
+        oss.str("");
     }
 
     output.flush();
@@ -85,37 +79,35 @@ void writeOneToken(T writer, TokenPtr pending)
     if (pending->getGraphemTag() != EGraphemTag::UNKNOWN)
         for (auto tag : toTagSet(pending->getGraphemTag()))
             writeString(writer, toString(tag));
-
     writer->EndArray();
+
+    writer->Key("semantic_tags");
+    writer->StartArray();
+    if (pending->getSemanticTag() != ESemanticTag::UNKNOWN)
+        for (auto tag : toTagSet(pending->getSemanticTag()))
+            writeString(writer, toString(tag));
+    writer->EndArray();
+
     writer->EndObject();
 }
 }
 
-bool TokenJSONOutputStream::write()
+void TokenJSONOutputStream::write(TokenPtr token)
 {
-    if (pending == nullptr)
-        if (!next())
-            return false;
 
     if (pretty)
     {
-        writeOneToken(std::get<PrettyWriterPtr>(writer_ptr), pending);
+        writeOneToken(std::get<PrettyWriterPtr>(writer_ptr), token);
         std::get<PrettyWriterPtr>(writer_ptr)->Flush();
     }
     else
     {
-        writeOneToken(std::get<WriterPtr>(writer_ptr), pending);
+        writeOneToken(std::get<WriterPtr>(writer_ptr), token);
         std::get<WriterPtr>(writer_ptr)->Flush();
     }
     output.write(oss.str());
     oss.str("");
     oss.clear();
-    pending = nullptr;
-    return true;
 }
 
-bool TokenJSONOutputStream::eos() const
-{
-    return pending == nullptr && input.eof();
-}
 }

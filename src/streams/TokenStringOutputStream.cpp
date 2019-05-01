@@ -5,62 +5,52 @@ namespace tokenize
 
 TokenStringOutputStream::TokenStringOutputStream(
     BaseCharOutputStream & os_,
-    BaseTokenInputStream & input_,
     size_t buffer_size_,
     const std::string & separator_)
-    : BaseTokenOutputStream(input_, buffer_size_)
+    : BaseTokenOutputStream(buffer_size_)
     , os(os_)
     , separator(separator_)
 {}
 
 
-bool TokenStringOutputStream::next()
+bool TokenStringOutputStream::next(TokenPtr token)
 {
-    if (input.eof() && pending.empty())
-        return false;
-
-    while(summary_pending_len < buffer_size && !input.eof())
+    if (token)
     {
-        auto token = input.read();
-        if (token)
-        {
-            std::ostringstream oss;
-            oss << "[" << token->getData()<< ", "
-                << toString(token->getTokenType());
-            if (token->getGraphemTag() != EGraphemTag::UNKNOWN)
-                oss <<", " << toString(token->getGraphemTag());
-            oss << "]" << separator;
-            const auto & str = oss.str();
-            summary_pending_len += str.length();
-            pending.push_back(str);
-        }
+        std::ostringstream oss;
+        oss << "[" << token->getEscapedData() << ", "
+            << toString(token->getTokenType());
+        if (token->getGraphemTag() != EGraphemTag::UNKNOWN)
+            oss <<", " << toString(token->getGraphemTag());
+        if (token->getSemanticTag() != ESemanticTag::UNKNOWN)
+            oss <<", " << toString(token->getSemanticTag());
+        oss << "]" << separator;
+        const auto & str = oss.str();
+        summary_pending_len += str.length();
+        pending.push_back(str);
     }
-    return true;
+
+    return summary_pending_len > buffer_size;
 }
 
-bool TokenStringOutputStream::write()
+void TokenStringOutputStream::write(TokenPtr token)
 {
-    if (pending.empty())
-        if (!next())
-            return false;
+    if (next(token))
+    {
+        for (auto & elem : pending)
+            os.write(elem);
+        pending.clear();
+        summary_pending_len = 0;
+    }
 
-    /// For last character
-    if (pending.size() == 1 && input.eof())
-        pending.front().pop_back();
-
-    os.write(pending.front());
-    summary_pending_len -= pending.front().length();
-    pending.pop_front();
-    return true;
-}
-
-bool TokenStringOutputStream::eos() const
-{
-    return pending.empty() && input.eof();
 }
 
 void TokenStringOutputStream::flush()
 {
+    for (auto & elem : pending)
+        os.write(elem);
+    pending.clear();
+    summary_pending_len = 0;
     os.flush();
 }
 }

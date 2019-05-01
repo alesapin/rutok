@@ -5,10 +5,35 @@
 #include <iostream>
 namespace tokenize
 {
-
+namespace
+{
+void terminateSentence(std::deque<TokenPtr> & tokens)
+{
+    if (tokens.empty()) return;
+    bool found = false;
+    for (long i = tokens.size() - 1; i >= 0; --i)
+    {
+        if (contains(tokens[i]->getGraphemTag(), EGraphemTag::CAN_TERMINATE_SENTENCE) || contains(tokens[i]->getGraphemTag(), EGraphemTag::MUST_TERMINATE_SENTENCE))
+        {
+            found = true;
+            tokens[i]->setSemanticTag(ESemanticTag::SENTENCE_END);
+            break;
+        }
+    }
+    if (!found)
+        tokens.back()->setSemanticTag(ESemanticTag::SENTENCE_END);
+}
+}
 Sentence::Sentence(const std::deque<TokenPtr> & tokens_)
     : tokens(tokens_)
 {
+    terminateSentence(tokens);
+}
+
+Sentence::Sentence(std::deque<TokenPtr> && tokens_)
+    : tokens(std::move(tokens_))
+{
+    terminateSentence(tokens);
 }
 
 size_t Sentence::tokensCount() const
@@ -109,10 +134,7 @@ bool Sentence::isCyrillic() const
         tokens.end(),
         [](TokenPtr token)
         {
-            if (token->getTokenType() == ETokenType::WORD
-                || token->getTokenType() == ETokenType::WORDNUM)
-                return contains(token->getGraphemTag(), EGraphemTag::CYRILLIC);
-            return true;
+            return token->isCyrillic();
         });
 }
 
@@ -123,10 +145,7 @@ bool Sentence::isLatin() const
         tokens.end(),
         [](TokenPtr token)
         {
-            if (token->getTokenType() == ETokenType::WORD
-                || token->getTokenType() == ETokenType::WORDNUM)
-                return contains(token->getGraphemTag(), EGraphemTag::LATIN);
-            return true;
+            return token->isLatin();
         });
 }
 

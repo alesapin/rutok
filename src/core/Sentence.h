@@ -12,6 +12,7 @@ private:
 public:
     Sentence() = default;
     Sentence(const std::deque<TokenPtr> & tokens_);
+    Sentence(std::deque<TokenPtr> && tokens_);
 
     /// Total tokens in sentence
     size_t tokensCount() const;
@@ -36,6 +37,10 @@ public:
     bool isLatin() const;
 
     bool isEmpty() const;
+    TokenPtr getToken(size_t i) const
+    {
+        return tokens[i];
+    }
 
     /// Return sentence as text
     std::string asText(bool to_lower=false, bool to_upper=false) const;

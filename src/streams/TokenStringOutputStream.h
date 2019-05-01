@@ -19,16 +19,14 @@ private:
     std::string separator;
 
 protected:
-    bool next() override;
+    bool next(TokenPtr token) override;
 
 public:
     TokenStringOutputStream(
         BaseCharOutputStream & os_,
-        BaseTokenInputStream & input_,
         size_t buffer_size_ = 4096,
         const std::string & separator_ = "\n");
-    bool write() override;
-    bool eos() const override;
+    void write(TokenPtr token) override;
     void flush() override;
 };
 }

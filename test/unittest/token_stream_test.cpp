@@ -180,13 +180,15 @@ TEST(TokenOutputStreamTest, SimpleOutput)
     TokenInputStream strm(*ss);
     std::ostringstream oss;
     EncodingOutputStream encoutput(oss);
-    TokenStringOutputStream outstrm(encoutput, strm);
-    while(outstrm.write());
+    TokenStringOutputStream outstrm(encoutput);
+    while(!strm.eof())
+        outstrm.write(strm.read());
     std::string result = R"***([hello, WORD, LATIN, LOWER_CASE]
 [ , SEPARATOR]
 [beautiful, WORD, LATIN, LOWER_CASE]
 [ , SEPARATOR]
-[world, WORD, LATIN, LOWER_CASE])***";
+[world, WORD, LATIN, LOWER_CASE]
+)***";
     outstrm.flush();
     EXPECT_EQ(result, oss.str());
 }
@@ -199,12 +201,13 @@ TEST(TokenOutputStreamTest, SimpleJSON)
     TokenInputStream strm(*ss);
     std::ostringstream oss;
     EncodingOutputStream encoutput(oss);
-    TokenJSONOutputStream outstrm(encoutput, strm, false);
+    TokenJSONOutputStream outstrm(encoutput, false);
     outstrm.start();
-    while(outstrm.write());
+    while(!strm.eof())
+        outstrm.write(strm.read());
     outstrm.finish();
     outstrm.flush();
-    std::string result = "[{\"text\":\"hello\",\"token_type\":\"WORD\",\"graphem_tags\":[\"LATIN\",\"LOWER_CASE\"]},{\"text\":\" \",\"token_type\":\"SEPARATOR\",\"graphem_tags\":[]}]";
+    std::string result = "[{\"text\":\"hello\",\"token_type\":\"WORD\",\"graphem_tags\":[\"LATIN\",\"LOWER_CASE\"],\"semantic_tags\":[]},{\"text\":\" \",\"token_type\":\"SEPARATOR\",\"graphem_tags\":[],\"semantic_tags\":[]}]";
     EXPECT_EQ(result, oss.str());
 }
 
@@ -215,19 +218,22 @@ TEST(TokenOutputStreamTest, PrettyJSON)
     TokenInputStream strm(*ss);
     std::ostringstream oss;
     EncodingOutputStream encoutput(oss);
-    TokenJSONOutputStream outstrm(encoutput, strm, true);
+    TokenJSONOutputStream outstrm(encoutput, true);
     outstrm.start();
-    while(outstrm.write());
+    while(!strm.eof())
+        outstrm.write(strm.read());
     outstrm.finish();
     outstrm.flush();
     std::string result = R"***([{
         "text":"hello",
         "token_type":"WORD",
-        "graphem_tags": ["LATIN","LOWER_CASE"]
+        "graphem_tags": ["LATIN","LOWER_CASE"],
+        "semantic_tags": []
     }, {
         "text":" ",
         "token_type":"SEPARATOR",
-        "graphem_tags": []
+        "graphem_tags": [],
+        "semantic_tags": []
     }])***";
     EXPECT_EQ(result, oss.str());
 }
