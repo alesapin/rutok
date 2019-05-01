@@ -9,17 +9,17 @@ namespace tokenize
 class BaseSentenceOutputStream
 {
 protected:
-    std::unique_ptr<BaseTokenOutputStream> holder;
-    BaseTokenOutputStream & output;
+    std::unique_ptr<BaseTokenOutputStream> output;
 public:
     BaseSentenceOutputStream(std::unique_ptr<BaseTokenOutputStream> holder_)
-        : holder(std::move(holder_))
-        , output(*holder) {}
+        : output(std::move(holder_)) {}
 
     virtual void write(SentencePtr sentence);
-    virtual void start() { output.start(); };
-    virtual void finish() { output.finish(); };
-    virtual void flush() { output.flush(); };
+    virtual void start() { output->start(); };
+    virtual void finish() { output->finish(); };
+    virtual void flush() { output->flush(); };
+
+    virtual ~BaseSentenceOutputStream() = default;
 };
 
 }

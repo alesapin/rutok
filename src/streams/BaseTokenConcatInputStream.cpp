@@ -31,7 +31,7 @@ bool BaseTokenConcatInputStream::next()
     {
         auto res = in.read();
         if (res != nullptr)
-            pending.push_back(res);
+            pending.push_back(std::move(res));
     }
 
     return !pending.empty();
@@ -55,12 +55,12 @@ TokenPtr BaseTokenConcatInputStream::read()
     TokenPtr result = nullptr;
     if (conc.operation_status == EConcatStatus::NOT_CONCATED)
     {
-        result = pending.front();
+        result = std::move(pending.front());
         pending.pop_front();
     }
     else
     {
-        result = conc.concat_result;
+        result = std::move(conc.concat_result);
         dropNFromQueueHead(conc.number_of_concated_tokens);
     }
 

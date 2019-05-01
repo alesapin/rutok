@@ -182,7 +182,10 @@ TEST(TokenOutputStreamTest, SimpleOutput)
     EncodingOutputStream encoutput(oss);
     TokenStringOutputStream outstrm(encoutput);
     while(!strm.eof())
-        outstrm.write(strm.read());
+    {
+        auto ptr = strm.read();
+        outstrm.write(ptr.get());
+    }
     std::string result = R"***([hello, WORD, LATIN, LOWER_CASE]
 [ , SEPARATOR]
 [beautiful, WORD, LATIN, LOWER_CASE]
@@ -204,7 +207,10 @@ TEST(TokenOutputStreamTest, SimpleJSON)
     TokenJSONOutputStream outstrm(encoutput, false);
     outstrm.start();
     while(!strm.eof())
-        outstrm.write(strm.read());
+    {
+        auto ptr = strm.read();
+        outstrm.write(ptr.get());
+    }
     outstrm.finish();
     outstrm.flush();
     std::string result = "[{\"text\":\"hello\",\"token_type\":\"WORD\",\"graphem_tags\":[\"LATIN\",\"LOWER_CASE\"],\"semantic_tags\":[]},{\"text\":\" \",\"token_type\":\"SEPARATOR\",\"graphem_tags\":[],\"semantic_tags\":[]}]";
@@ -221,7 +227,10 @@ TEST(TokenOutputStreamTest, PrettyJSON)
     TokenJSONOutputStream outstrm(encoutput, true);
     outstrm.start();
     while(!strm.eof())
-        outstrm.write(strm.read());
+    {
+        auto ptr = strm.read();
+        outstrm.write(ptr.get());
+    }
     outstrm.finish();
     outstrm.flush();
     std::string result = R"***([{

@@ -29,7 +29,7 @@ bool isFileExists(const std::string & filename)
 using OutTokenStreamPtr = std::shared_ptr<BaseTokenOutputStream>;
 using OutSentenceStreamPtr = std::shared_ptr<BaseSentenceOutputStream>;
 
-OutTokenStreamPtr getTokenOutputStream(const std::string & format, bool pretty, EncodingOutputStream & out)
+OutTokenStreamPtr getTokenOutputStream(const std::string & format, bool pretty, EncodingOutputStream && out)
 {
     OutTokenStreamPtr output_token;
     if (format == "str")
@@ -45,7 +45,7 @@ OutTokenStreamPtr getTokenOutputStream(const std::string & format, bool pretty, 
 }
 
 
-OutSentenceStreamPtr getSentenceOutputStream(const std::string & format, bool pretty, EncodingOutputStream & out)
+OutSentenceStreamPtr getSentenceOutputStream(const std::string & format, bool pretty, EncodingOutputStream && out)
 {
     OutSentenceStreamPtr output_token;
     if (format == "str")
@@ -133,8 +133,8 @@ try {
         return 1;
     }
 
-    std::shared_ptr<std::istream> holding_inp_stream = nullptr;
-    std::shared_ptr<std::ostream> holding_out_stream = nullptr;
+    std::unique_ptr<std::istream> holding_inp_stream = nullptr;
+    std::unique_ptr<std::ostream> holding_out_stream = nullptr;
     std::istream * inp = &std::cin;
     std::ostream * out = &std::cout;
     if (input)
@@ -142,13 +142,13 @@ try {
         std::string input_file = args::get(input);
         if (!isFileExists(input_file))
             throw std::runtime_error("File " + input_file + " doesn't exists");
-        holding_inp_stream = std::make_shared<std::ifstream>(input_file, std::ifstream::in);
+        holding_inp_stream = std::make_unique<std::ifstream>(input_file, std::ifstream::in);
         inp = holding_inp_stream.get();
     }
     if (output)
     {
         std::string output_file = args::get(output);
-        holding_out_stream = std::make_shared<std::ofstream>(output_file);
+        holding_out_stream = std::make_unique<std::ofstream>(output_file);
         out = holding_out_stream.get();
     }
 
@@ -161,7 +161,7 @@ try {
     if (sentence)
     {
         EncodingOutputStream out_enc(*out);
-        OutSentenceStreamPtr output_sentence = getSentenceOutputStream(args::get(format), pretty, out_enc);
+        OutSentenceStreamPtr output_sentence = getSentenceOutputStream(args::get(format), pretty, std::move(out_enc));
 
         output_sentence->start();
         SentenceInputStream sent_inp(concater);
@@ -186,7 +186,7 @@ try {
     else
     {
         EncodingOutputStream out_enc(*out);
-        OutTokenStreamPtr output_token = getTokenOutputStream(args::get(format), pretty, out_enc);
+        OutTokenStreamPtr output_token = getTokenOutputStream(args::get(format), pretty, std::move(out_enc));
 
         output_token->start();
         while(!concater.eof())
@@ -199,7 +199,7 @@ try {
                     continue;
                 if (latin && !token->isLatin())
                     continue;
-                output_token->write(token);
+                output_token->write(token.get());
             }
         }
         output_token->finish();

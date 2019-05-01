@@ -19,7 +19,12 @@ TEST(SentenceTest, SimpleFunctionsTest)
     auto third = strm.read();
     auto fourth = strm.read();
     EXPECT_TRUE(strm.eof());
-    SentencePtr s = std::make_shared<Sentence>(std::deque<TokenPtr>{first, second, third, fourth});
+    std::deque<TokenPtr> tokens;
+    tokens.emplace_back(std::move(first));
+    tokens.emplace_back(std::move(second));
+    tokens.emplace_back(std::move(third));
+    tokens.emplace_back(std::move(fourth));
+    SentencePtr s = std::make_shared<Sentence>(std::move(tokens));
     EXPECT_EQ(s->tokensCount(), 4);
     EXPECT_EQ(s->wordsCount(), 2);
     EXPECT_EQ(s->charactersCount(), str.length());
@@ -53,7 +58,12 @@ TEST(SentenceTest, SimpleFunctionsTest2)
     auto third = strm.read();
     auto fourth = strm.read();
     EXPECT_TRUE(strm.eof());
-    SentencePtr s = std::make_shared<Sentence>(std::deque<TokenPtr>{first, second, third, fourth});
+    std::deque<TokenPtr> tokens;
+    tokens.emplace_back(std::move(first));
+    tokens.emplace_back(std::move(second));
+    tokens.emplace_back(std::move(third));
+    tokens.emplace_back(std::move(fourth));
+    SentencePtr s = std::make_shared<Sentence>(std::move(tokens));
     EXPECT_EQ(s->tokensCount(), 4);
     EXPECT_EQ(s->wordsCount(), 1);
     EXPECT_GT(s->bytesCount(), s->charactersCount());

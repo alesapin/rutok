@@ -37,10 +37,16 @@ public:
     bool isLatin() const;
 
     bool isEmpty() const;
-    TokenPtr getToken(size_t i) const
+    const Token & getTokenRef(size_t i) const
     {
-        return tokens[i];
+        return *tokens[i];
     }
+
+    const Token * getTokenPtr(size_t i) const
+    {
+        return tokens[i].get();
+    }
+
 
     /// Return sentence as text
     std::string asText(bool to_lower=false, bool to_upper=false) const;

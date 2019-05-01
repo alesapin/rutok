@@ -31,13 +31,13 @@ private:
     bool pretty;
 
 protected:
-    bool next(TokenPtr token) override;
+    bool next(const Token * token) override;
 
 public:
     TokenJSONOutputStream(
         BaseCharOutputStream & output_,
         bool pretty_=false);
-    void write(TokenPtr token) override;
+    void write(const Token * token) override;
     void start() override;
     void finish() override;
     void flush() override;

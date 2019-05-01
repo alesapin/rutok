@@ -24,11 +24,6 @@ void terminateSentence(std::deque<TokenPtr> & tokens)
         tokens.back()->setSemanticTag(ESemanticTag::SENTENCE_END);
 }
 }
-Sentence::Sentence(const std::deque<TokenPtr> & tokens_)
-    : tokens(tokens_)
-{
-    terminateSentence(tokens);
-}
 
 Sentence::Sentence(std::deque<TokenPtr> && tokens_)
     : tokens(std::move(tokens_))
@@ -46,7 +41,7 @@ size_t Sentence::wordsCount() const
     return static_cast<size_t>(std::count_if(
         tokens.begin(),
         tokens.end(),
-        [](TokenPtr token) { return token->getTokenType() == ETokenType::WORD; }));
+        [](const TokenPtr & token) { return token->getTokenType() == ETokenType::WORD; }));
 }
 
 size_t Sentence::charactersCount() const
@@ -55,7 +50,7 @@ size_t Sentence::charactersCount() const
         tokens.begin(),
         tokens.end(),
         size_t{0},
-        [](size_t current, TokenPtr token) { return token->getLength() + current; });
+        [](size_t current, const TokenPtr & token) { return token->getLength() + current; });
 }
 
 size_t Sentence::bytesCount() const
@@ -64,7 +59,7 @@ size_t Sentence::bytesCount() const
         tokens.begin(),
         tokens.end(),
         size_t{0},
-        [](size_t current, TokenPtr token) { return token->getBytesLength() + current; });
+        [](size_t current, const TokenPtr & token) { return token->getBytesLength() + current; });
 }
 
 bool Sentence::isEndsCorrectly() const
@@ -72,11 +67,11 @@ bool Sentence::isEndsCorrectly() const
     if (tokens.empty())
         return true;
 
-    TokenPtr last = tokens.back();
+    auto last = tokens.back().get();
     if (last->getTokenType() == ETokenType::PUNCT && last->getData() == "\"")
     {
         if (tokens.size() > 1)
-            last = tokens[tokens.size() - 2];
+            last = tokens[tokens.size() - 2].get();
         else
             return false;
     }
@@ -90,11 +85,11 @@ bool Sentence::isStartsCorrectly() const
     if (tokens.empty())
         return true;
 
-    TokenPtr first = tokens.front();
+    auto first = tokens.front().get();
     if (first->getTokenType() == ETokenType::PUNCT && first->getData() == "\"")
     {
         if (tokens.size() > 1)
-            first = tokens[1];
+            first = tokens[1].get();
         else
             return false;
     }
@@ -108,8 +103,8 @@ bool Sentence::isQuoted() const
 {
     if (tokens.size() < 2)
         return false;
-    TokenPtr first = tokens.front();
-    TokenPtr last = tokens.back();
+    auto first = tokens.front().get();
+    auto last = tokens.back().get();
     return first->getTokenType() == ETokenType::PUNCT
         && first->getData() == "\""
         && *first == *last;
@@ -120,7 +115,7 @@ bool Sentence::isWordsOnly() const
     return std::all_of(
         tokens.begin(),
         tokens.end(),
-        [](TokenPtr token)
+        [](const TokenPtr & token)
         {
             return token->getTokenType() == ETokenType::WORD
                 || (token->getTokenType() == ETokenType::SEPARATOR && token->getData() == " ");
@@ -132,7 +127,7 @@ bool Sentence::isCyrillic() const
     return std::all_of(
         tokens.begin(),
         tokens.end(),
-        [](TokenPtr token)
+        [](const TokenPtr & token)
         {
             return token->isCyrillic();
         });
@@ -143,7 +138,7 @@ bool Sentence::isLatin() const
     return std::all_of(
         tokens.begin(),
         tokens.end(),
-        [](TokenPtr token)
+        [](const TokenPtr & token)
         {
             return token->isLatin();
         });
@@ -158,11 +153,11 @@ bool Sentence::isEmpty() const
 std::string Sentence::asText(bool to_lower, bool to_upper) const
 {
     std::ostringstream oss;
-    for (auto token : tokens)
+    for (auto & token : tokens)
         if (to_lower)
-            oss << Token::toLower(token)->getData();
+            oss << Token::toLower(token.get())->getData();
         else if (to_upper)
-            oss << Token::toUpper(token)->getData();
+            oss << Token::toUpper(token.get())->getData();
         else
             oss << token->getData();
     return oss.str();
@@ -173,7 +168,7 @@ SentencePtr Sentence::toWordsOnly(SentencePtr sentence)
     std::deque<TokenPtr> new_tokens;
     for (size_t i = 0; i < sentence->tokens.size(); ++i)
     {
-        auto token = sentence->tokens[i];
+        auto token = sentence->tokens[i].get();
         if (token->getTokenType() == ETokenType::WORD || token->getTokenType() == ETokenType::WORDNUM || token->getTokenType() == ETokenType::NUMBER)
         {
             new_tokens.emplace_back(Token::refine(token));

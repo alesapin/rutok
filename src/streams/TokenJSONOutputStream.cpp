@@ -37,7 +37,7 @@ void TokenJSONOutputStream::finish()
 }
 
 
-bool TokenJSONOutputStream::next(TokenPtr token)
+bool TokenJSONOutputStream::next(const Token * token)
 {
     return true;
 }
@@ -67,7 +67,7 @@ void writeString(std::shared_ptr<JSONWriter> writer, const std::string & value)
 }
 
 template <typename T>
-void writeOneToken(T writer, TokenPtr pending)
+void writeOneToken(T writer, const Token * pending)
 {
     writer->StartObject();
     writer->Key("text");
@@ -92,7 +92,7 @@ void writeOneToken(T writer, TokenPtr pending)
 }
 }
 
-void TokenJSONOutputStream::write(TokenPtr token)
+void TokenJSONOutputStream::write(const Token * token)
 {
 
     if (pretty)

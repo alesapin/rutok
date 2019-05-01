@@ -9,55 +9,42 @@ using namespace RS;
 using namespace RS::Unicorn;
 using namespace RS::Unicorn::Literals;
 
-namespace detail {
-struct TokenImpl
+char32_t Token::at(size_t i) const
 {
-    Ustring data;
-    size_t length;
-    ETokenType type_tag = ETokenType::UNKNOWN;
-    EGraphemTag graphem_tag = EGraphemTag::UNKNOWN;
-    ESemanticTag semantic_tag = ESemanticTag::UNKNOWN;
-    char32_t at(size_t i) const
-    {
-        return str_char_at(data, i);
-    }
-
-};
+    return str_char_at(data, i);
 }
-
-Token::~Token() = default;
 
 char32_t Token::operator[](size_t i) const
 {
-    return impl->at(i);
+    return at(i);
 }
 
 ETokenType Token::getTokenType() const
 {
-    return impl->type_tag;
+    return type_tag;
 }
 
 
 EGraphemTag Token::getGraphemTag() const
 {
-    return impl->graphem_tag;
+    return graphem_tag;
 }
 
 
 ESemanticTag Token::getSemanticTag() const
 {
-    return impl->semantic_tag;
+    return semantic_tag;
 }
 
 const std::string & Token::getData() const
 {
-    return impl->data;
+    return data;
 }
 
 std::string Token::getEscapedData() const
 {
     std::ostringstream oss;
-    for (std::string::const_iterator i = impl->data.begin(), end = impl->data.end(); i != end; ++i) {
+    for (std::string::const_iterator i = data.begin(), end = data.end(); i != end; ++i) {
         unsigned char c = *i;
         if (' ' <= c and c <= '~' and c != '\\' and c != '"') {
             oss << c;
@@ -78,18 +65,18 @@ std::string Token::getEscapedData() const
 
 size_t Token::getLength() const
 {
-    return impl->length;
+    return length;
 }
 
 
 size_t Token::getBytesLength() const
 {
-    return impl->data.length();
+    return data.length();
 }
 
 bool Token::operator<(const Token & o) const
 {
-    return std::make_tuple(impl->length, impl->data, impl->type_tag, impl->graphem_tag) < std::make_tuple(o.impl->length, o.impl->data, o.impl->type_tag, o.impl->graphem_tag);
+    return std::make_tuple(length, data, type_tag, graphem_tag) < std::make_tuple(o.length, o.data, o.type_tag, o.graphem_tag);
 }
 
 bool Token::operator>(const Token & o) const
@@ -150,12 +137,7 @@ bool Token::isTitle() const
 
 void Token::setSemanticTag(ESemanticTag tag)
 {
-    impl->semantic_tag = tag;
-}
-
-Token::Token(const Token & other)
-{
-    impl = std::make_unique<detail::TokenImpl>(*other.impl);
+    semantic_tag = tag;
 }
 
 namespace
@@ -329,64 +311,61 @@ EGraphemTag detectGraphemTag(const Ustring & str, ETokenType token_type, size_t 
 
 }
 
-std::shared_ptr<Token> Token::createToken(const std::string & data)
+std::unique_ptr<Token> Token::createToken(const std::string & data)
 {
-    auto result = std::make_shared<Token>();
-    auto impl = std::make_unique<detail::TokenImpl>();
-    impl->data = data;
+    auto result = std::make_unique<Token>();
+    result->data = data;
     size_t length = str_length(data);
-    impl->length = length;
-    impl->type_tag = detectTokenType(data);
-    impl->graphem_tag = detectGraphemTag(data, impl->type_tag, length);
-    result->impl = std::move(impl);
+    result->length = length;
+    result->type_tag = detectTokenType(data);
+    result->graphem_tag = detectGraphemTag(data, result->type_tag, length);
     return result;
 }
 
-std::shared_ptr<Token> Token::toUpper(const std::shared_ptr<Token> token)
+std::unique_ptr<Token> Token::toUpper(const Token * token)
 {
-    auto result = std::make_shared<Token>(*token);
+    auto result = std::make_unique<Token>(*token);
     if (token->getTokenType() == ETokenType::WORD)
     {
-        str_uppercase_in(result->impl->data);
-        result->impl->graphem_tag = exclude(result->impl->graphem_tag, EGraphemTag::LOWER_CASE | EGraphemTag::MIXED_CASE | EGraphemTag::TITLE_CASE);
-        result->impl->graphem_tag |= EGraphemTag::UPPER_CASE;
+        str_uppercase_in(result->data);
+        result->graphem_tag = exclude(result->graphem_tag, EGraphemTag::LOWER_CASE | EGraphemTag::MIXED_CASE | EGraphemTag::TITLE_CASE);
+        result->graphem_tag |= EGraphemTag::UPPER_CASE;
     }
     return result;
 }
-std::shared_ptr<Token> Token::toLower(const std::shared_ptr<Token> token)
+std::unique_ptr<Token> Token::toLower(const Token * token)
 {
-    auto result = std::make_shared<Token>(*token);
+    auto result = std::make_unique<Token>(*token);
     if (token->getTokenType() == ETokenType::WORD)
     {
-        str_lowercase_in(result->impl->data);
-        result->impl->graphem_tag = exclude(result->impl->graphem_tag, EGraphemTag::UPPER_CASE | EGraphemTag::MIXED_CASE | EGraphemTag::TITLE_CASE);
-        result->impl->graphem_tag |= EGraphemTag::LOWER_CASE;
+        str_lowercase_in(result->data);
+        result->graphem_tag = exclude(result->graphem_tag, EGraphemTag::UPPER_CASE | EGraphemTag::MIXED_CASE | EGraphemTag::TITLE_CASE);
+        result->graphem_tag |= EGraphemTag::LOWER_CASE;
     }
     return result;
 }
-std::shared_ptr<Token> Token::toTitle(const std::shared_ptr<Token> token)
+std::unique_ptr<Token> Token::toTitle(const Token * token)
 {
-    auto result = std::make_shared<Token>(*token);
+    auto result = std::make_unique<Token>(*token);
     if (token->getTokenType() == ETokenType::WORD)
     {
-        str_titlecase_in(result->impl->data);
-        result->impl->graphem_tag = exclude(result->impl->graphem_tag, EGraphemTag::UPPER_CASE | EGraphemTag::MIXED_CASE | EGraphemTag::LOWER_CASE);
-        result->impl->graphem_tag |= EGraphemTag::TITLE_CASE;
+        str_titlecase_in(result->data);
+        result->graphem_tag = exclude(result->graphem_tag, EGraphemTag::UPPER_CASE | EGraphemTag::MIXED_CASE | EGraphemTag::LOWER_CASE);
+        result->graphem_tag |= EGraphemTag::TITLE_CASE;
     }
 
     return result;
 }
 
 
-TokenPtr Token::concat(const std::vector<TokenPtr> & tokens, EGraphemTag additional)
+TokenPtr Token::concat(const std::vector<const Token *> & tokens, EGraphemTag additional)
 {
-    auto result = std::make_shared<Token>();
-    result->impl = std::make_unique<detail::TokenImpl>();
+    auto result = std::make_unique<Token>();
     ETokenType type_tag = ETokenType::UNKNOWN;
     EGraphemTag graphem_tag = additional;
     bool first = true;
     size_t sum_length = 0;
-    for (auto token : tokens)
+    for (auto & token : tokens)
     {
         if (type_tag == ETokenType::UNKNOWN && first)
         {
@@ -489,25 +468,23 @@ TokenPtr Token::concat(const std::vector<TokenPtr> & tokens, EGraphemTag additio
                 type_tag = ETokenType::UNKNOWN;
         }
 
-
-        str_append(result->impl->data, token->getData());
+        str_append(result->data, token->getData());
         sum_length += token->getLength();
     }
-    result->impl->length = sum_length;
-    result->impl->type_tag = type_tag;
+    result->length = sum_length;
+    result->type_tag = type_tag;
 
     if (type_tag != ETokenType::UNKNOWN)
-        result->impl->graphem_tag = graphem_tag | detectGraphemTag(result->getData(), type_tag, result->getLength());
+        result->graphem_tag = graphem_tag | detectGraphemTag(result->getData(), type_tag, result->getLength());
 
     return result;
 }
 
-std::shared_ptr<Token> Token::createDefaultSeparator()
+std::unique_ptr<Token> Token::createDefaultSeparator()
 {
-    auto result = std::make_shared<Token>();
-    result->impl = std::make_unique<detail::TokenImpl>();
-    result->impl->type_tag = ETokenType::SEPARATOR;
-    result->impl->data = " ";
+    auto result = std::make_unique<Token>();
+    result->type_tag = ETokenType::SEPARATOR;
+    result->data = " ";
     return result;
 }
 
@@ -529,7 +506,7 @@ bool Token::isCyrillic() const
 
 
 
-std::shared_ptr<Token> Token::refine(std::shared_ptr<Token> token)
+std::unique_ptr<Token> Token::refine(const Token * token)
 {
     EGraphemTag token_graphem_tag = token->getGraphemTag();
     ETokenType token_type = token->getTokenType();
@@ -539,14 +516,13 @@ std::shared_ptr<Token> Token::refine(std::shared_ptr<Token> token)
         for (const auto & chr : token->getData())
             if (chr != ' ')
                 str << chr;
-        auto result = std::make_shared<Token>();
-        result->impl = std::make_unique<detail::TokenImpl>();
-        result->impl->type_tag = token_type;
-        result->impl->data = str.str();
-        result->impl->graphem_tag = exclude(token_graphem_tag, EGraphemTag::SPACED);
+        auto result = std::make_unique<Token>();
+        result->type_tag = token_type;
+        result->data = str.str();
+        result->graphem_tag = exclude(token_graphem_tag, EGraphemTag::SPACED);
         return result;
     }
-    return std::make_shared<Token>(*token);
+    return std::make_unique<Token>(*token);
 
 }
 

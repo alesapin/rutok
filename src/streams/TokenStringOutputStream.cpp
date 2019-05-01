@@ -13,7 +13,7 @@ TokenStringOutputStream::TokenStringOutputStream(
 {}
 
 
-bool TokenStringOutputStream::next(TokenPtr token)
+bool TokenStringOutputStream::next(const Token * token)
 {
     if (token)
     {
@@ -33,7 +33,7 @@ bool TokenStringOutputStream::next(TokenPtr token)
     return summary_pending_len > buffer_size;
 }
 
-void TokenStringOutputStream::write(TokenPtr token)
+void TokenStringOutputStream::write(const Token * token)
 {
     if (next(token))
     {

@@ -13,7 +13,7 @@ public:
     {}
 
     virtual void write(const std::string & data) = 0;
-    virtual ~BaseCharOutputStream() {}
+    virtual ~BaseCharOutputStream() = default;
     virtual void flush() {};
 };
 }

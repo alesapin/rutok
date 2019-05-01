@@ -9,14 +9,11 @@
 namespace tokenize
 {
 
-namespace detail {
-struct TokenImpl;
-}
-
 class Token
 {
 public:
     char32_t operator[](size_t index) const;
+    char32_t at(size_t i) const;
     ETokenType getTokenType() const;
     EGraphemTag getGraphemTag() const;
     ESemanticTag getSemanticTag() const;
@@ -25,13 +22,13 @@ public:
     size_t getLength() const;
     size_t getBytesLength() const;
 
-    static std::shared_ptr<Token> createToken(const std::string & data);
-    static std::shared_ptr<Token> toUpper(const std::shared_ptr<Token> token);
-    static std::shared_ptr<Token> toLower(const std::shared_ptr<Token> token);
-    static std::shared_ptr<Token> toTitle(const std::shared_ptr<Token> token);
-    static std::shared_ptr<Token> concat(const std::vector<std::shared_ptr<Token>> & tokens, EGraphemTag additional=EGraphemTag::UNKNOWN);
-    static std::shared_ptr<Token> refine(std::shared_ptr<Token> token);
-    static std::shared_ptr<Token> createDefaultSeparator();
+    static std::unique_ptr<Token> createToken(const std::string & data);
+    static std::unique_ptr<Token> toUpper(const Token * token);
+    static std::unique_ptr<Token> toLower(const Token * token);
+    static std::unique_ptr<Token> toTitle(const Token * token);
+    static std::unique_ptr<Token> concat(const std::vector<const Token *> & tokens, EGraphemTag additional=EGraphemTag::UNKNOWN);
+    static std::unique_ptr<Token> refine(const Token * token);
+    static std::unique_ptr<Token> createDefaultSeparator();
 
     bool operator<(const Token & o) const;
     bool operator>(const Token & o) const;
@@ -49,12 +46,14 @@ public:
     void setSemanticTag(ESemanticTag tag);
 
     Token() = default;
-    ~Token();
-
-    Token(const Token & other);
+    ~Token() = default;
 
 private:
-    std::unique_ptr<detail::TokenImpl> impl;
+    std::string data;
+    size_t length;
+    ETokenType type_tag = ETokenType::UNKNOWN;
+    EGraphemTag graphem_tag = EGraphemTag::UNKNOWN;
+    ESemanticTag semantic_tag = ESemanticTag::UNKNOWN;
 };
 
 struct TokenHasher
@@ -62,7 +61,6 @@ struct TokenHasher
     size_t operator()(const Token & token) const;
 };
 
-using TokenPtr = std::shared_ptr<Token>;
-
+using TokenPtr = std::unique_ptr<Token>;
 
 }

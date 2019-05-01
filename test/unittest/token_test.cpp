@@ -181,9 +181,14 @@ TEST(TokenTest, GraphemInfoSep)
 TokenPtr merge(const std::vector<std::string> & strings)
 {
     std::vector<TokenPtr> tokens;
+    std::vector<const Token *> tmps;
     for (const auto & str : strings)
+    {
         tokens.push_back(Token::createToken(str));
-    return Token::concat(tokens);
+        tmps.emplace_back(tokens.back().get());
+    }
+
+    return Token::concat(tmps);
 }
 
 TEST(TokenTest, TestConcat)
@@ -265,7 +270,7 @@ TEST(TokenTest, TestConcat)
     EXPECT_EQ(ETokenType::WORD, merged19->getTokenType());
     EXPECT_EQ(EGraphemTag::SPACED | EGraphemTag::UPPER_CASE | EGraphemTag::CYRILLIC, merged19->getGraphemTag());
 
-    auto refined = Token::refine(merged19);
+    auto refined = Token::refine(merged19.get());
     EXPECT_EQ(refined->getData(), "ВАСЯ");
     EXPECT_EQ(ETokenType::WORD, refined->getTokenType());
     EXPECT_EQ(EGraphemTag::UPPER_CASE | EGraphemTag::CYRILLIC, refined->getGraphemTag());

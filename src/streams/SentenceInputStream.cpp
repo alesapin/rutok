@@ -38,9 +38,9 @@ SentencePtr buildSentence(std::deque<TokenPtr> & tokens, size_t to)
 }
 
 ESentenceStatus isSentenceEndAtSecond(
-    TokenPtr first_word,
-    TokenPtr second_word,
-    TokenPtr third_word)
+    const Token * first_word,
+    const Token * second_word,
+    const Token * third_word)
 {
     if(second_word->getTokenType() != ETokenType::PUNCT
         || (
@@ -121,7 +121,7 @@ bool SentenceInputStream::next()
     {
         auto res = is.read();
         if (res != nullptr)
-            pending.push_back(res);
+            pending.emplace_back(std::move(res));
     }
 
     return !pending.empty();
@@ -186,9 +186,9 @@ SentencePtr SentenceInputStream::read()
                 break;
             }
         }
-        TokenPtr first = pending[static_cast<size_t>(first_word)];
-        TokenPtr second = pending[static_cast<size_t>(second_punct)];
-        TokenPtr third = pending[static_cast<size_t>(third_word)];
+        const Token * first = pending[static_cast<size_t>(first_word)].get();
+        const Token * second = pending[static_cast<size_t>(second_punct)].get();
+        const Token * third = pending[static_cast<size_t>(third_word)].get();
         if (isSentenceEndAtSecond(first, second, third) == ESentenceStatus::TERMINATES)
         {
             result = buildSentence(pending, static_cast<size_t>(second_punct) + 1);

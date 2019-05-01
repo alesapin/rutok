@@ -34,7 +34,9 @@ ConcatResult IdenticalConcatInputStream::concat(const std::deque<TokenPtr> & win
     if (i == window.size() && !last)
         return {EConcatStatus::NEED_MORE, nullptr, 0};
 
-    std::vector<TokenPtr> to_concat{window.begin(), window.begin() + static_cast<long>(i)};
+    std::vector<const Token *> to_concat;
+    for (size_t j = 0; j < i; ++j)
+        to_concat.emplace_back(window[j].get());
     return {EConcatStatus::CONCATED, Token::concat(to_concat), to_concat.size()};
 }
 }

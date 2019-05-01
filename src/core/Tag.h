@@ -129,8 +129,6 @@ inline std::string toStringSingle(ESemanticTag tag)
 
 }
 
-//std::string toString(EGraphemTag tag, const std::string & sep = ", ");
-//std::string toString(ESemanticTag tag, const std::string & sep = ", ");
 std::string toString(ETokenType tag);
 
 template<typename T>

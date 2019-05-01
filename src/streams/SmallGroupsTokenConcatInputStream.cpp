@@ -27,15 +27,19 @@ std::tuple<TokenPtr, size_t, bool> concatExclamatingQuestion(const std::deque<To
         return {nullptr, 0, false};
 
 
-    std::vector<TokenPtr> concated(window.begin(), window.begin() + static_cast<long>(to_concat));
+    std::vector<const Token *> concated;
+    for (size_t i = 0; i < to_concat; ++i)
+    {
+        concated.emplace_back(window[i].get());
+    }
     auto result = Token::concat(concated);
     if (to_concat == window.size())
-        return {result, to_concat, true};
+        return {std::move(result), to_concat, true};
 
-    return {result, to_concat, false};
+    return {std::move(result), to_concat, false};
 }
 
-bool canConcatThreeHyphenWords(TokenPtr first, TokenPtr second, TokenPtr third)
+bool canConcatThreeHyphenWords(const Token * first, const Token * second, const Token * third)
 {
     if (second->getData() == "-")
     {
@@ -54,7 +58,7 @@ bool canConcatThreeHyphenWords(TokenPtr first, TokenPtr second, TokenPtr third)
     return false;
 }
 
-bool canConcatWordWrap(TokenPtr first, TokenPtr second, TokenPtr third, TokenPtr fourth)
+bool canConcatWordWrap(const Token * first, const Token * second, const Token * third, const Token * fourth)
 {
     return first->getTokenType() == ETokenType::WORD
         && second->getData() == "-"
@@ -62,7 +66,7 @@ bool canConcatWordWrap(TokenPtr first, TokenPtr second, TokenPtr third, TokenPtr
         && fourth->getTokenType() == ETokenType::WORD;
 }
 
-bool canConcatWordWrap(TokenPtr first, TokenPtr second, TokenPtr third, TokenPtr fourth, TokenPtr fifth)
+bool canConcatWordWrap(const Token * first, const Token * second, const Token * third, const Token * fourth, const Token * fifth)
 {
     return first->getTokenType() == ETokenType::WORD
         && second->getData() == "-"
@@ -89,7 +93,7 @@ std::tuple<TokenPtr, size_t, bool> concatNHyphenWords(const std::deque<TokenPtr>
             break;
         }
 
-        if (canConcatThreeHyphenWords(window[i], window[i + 1], window[i + 2]))
+        if (canConcatThreeHyphenWords(window[i].get(), window[i + 1].get(), window[i + 2].get()))
         {
             concat_size += i == 0 ? 3 : 2;
         }
@@ -101,7 +105,9 @@ std::tuple<TokenPtr, size_t, bool> concatNHyphenWords(const std::deque<TokenPtr>
     }
     if (concat_size != 0)
     {
-        std::vector<TokenPtr> to_concat(window.begin(), window.begin() + concat_size);
+        std::vector<const Token *> to_concat;
+        for (size_t i = 0; i < concat_size; ++i)
+            to_concat.emplace_back(window[i].get());
         return {Token::concat(to_concat), concat_size, possible_more};
     }
     return {nullptr, 0, false};
@@ -122,7 +128,7 @@ ConcatResult SmallGroupsTokenConcatInputStream::concat(const std::deque<TokenPtr
     if (auto [excl, excl_size, possible_more_excls] = concatExclamatingQuestion(window); possible_more_excls && !last)
         return {EConcatStatus::NEED_MORE, nullptr, 0};
     else if (excl)
-        return {EConcatStatus::CONCATED, excl, excl_size};
+        return {EConcatStatus::CONCATED, std::move(excl), excl_size};
 
     if (window.size() < 3)
     {
@@ -136,7 +142,7 @@ ConcatResult SmallGroupsTokenConcatInputStream::concat(const std::deque<TokenPtr
     if (possible_next && !last)
         return {EConcatStatus::NEED_MORE, nullptr, 0};
     else if (token != nullptr)
-        return {EConcatStatus::CONCATED, token, size};
+        return {EConcatStatus::CONCATED, std::move(token), size};
 
     if (window.size() < 4)
     {
@@ -145,8 +151,8 @@ ConcatResult SmallGroupsTokenConcatInputStream::concat(const std::deque<TokenPtr
         else
             return {EConcatStatus::NEED_MORE, nullptr, 0};
     }
-    if (canConcatWordWrap(window[0], window[1], window[2], window[3]))
-        return {EConcatStatus::CONCATED, Token::concat({window[0], window[3]}, EGraphemTag::WRAPPED_WORD), 4};
+    if (canConcatWordWrap(window[0].get(), window[1].get(), window[2].get(), window[3].get()))
+        return {EConcatStatus::CONCATED, Token::concat({window[0].get(), window[3].get()}, EGraphemTag::WRAPPED_WORD), 4};
 
     if (window.size() < 5)
     {
@@ -155,8 +161,8 @@ ConcatResult SmallGroupsTokenConcatInputStream::concat(const std::deque<TokenPtr
         else
             return {EConcatStatus::NEED_MORE, nullptr, 0};
     }
-    if (canConcatWordWrap(window[0], window[1], window[2], window[3], window[4]))
-        return {EConcatStatus::CONCATED, Token::concat({window[0], window[4]}, EGraphemTag::WRAPPED_WORD), 5};
+    if (canConcatWordWrap(window[0].get(), window[1].get(), window[2].get(), window[3].get(), window[4].get()))
+        return {EConcatStatus::CONCATED, Token::concat({window[0].get(), window[4].get()}, EGraphemTag::WRAPPED_WORD), 5};
 
     return {EConcatStatus::NOT_CONCATED, nullptr, 0};
 }
