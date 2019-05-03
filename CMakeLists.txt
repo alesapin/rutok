@@ -40,7 +40,11 @@ add_library(rutoklib
   src/streams/BaseTokenConcatInputStream.cpp
   src/streams/SmallGroupsTokenConcatInputStream.cpp
   src/streams/SentenceInputStream.cpp
-  src/streams/EncodingInputStream.cpp
+  src/streams/EncodingInputStreamBase.cpp
+  src/streams/EncodingInputStreamFromStream.cpp
+  src/streams/EncodingInputStreamFromFile.cpp
+  src/streams/EncodingInputStreamFromDescriptor.cpp
+  src/streams/EncodingInputStreamFromString.cpp
   src/streams/EncodingOutputStream.cpp
   src/streams/IdenticalConcatInputStream.cpp
   src/streams/SentenceJSONOutputStream.cpp

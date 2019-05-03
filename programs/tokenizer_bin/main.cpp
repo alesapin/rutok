@@ -6,7 +6,7 @@
 #include <fstream>
 #include <map>
 #include <string>
-#include <streams/EncodingInputStream.h>
+#include <streams/EncodingInputStreamFromStream.h>
 #include <streams/TokenInputStream.h>
 #include <streams/EncodingOutputStream.h>
 #include <streams/TokenJSONOutputStream.h>
@@ -152,7 +152,7 @@ try {
         out = holding_out_stream.get();
     }
 
-    EncodingInputStream enc_inp(*inp);
+    EncodingInputStreamFromStream enc_inp(*inp);
     TokenInputStream base_strm(enc_inp);
     IdenticalConcatInputStream ident(base_strm);
     SmallGroupsTokenConcatInputStream concater(ident);
@@ -170,14 +170,14 @@ try {
             if (auto sent = sent_inp.read(); sent)
             {
                 if (word_only)
-                    sent = Sentence::toWordsOnly(sent);
+                    sent = Sentence::toWordsOnly(std::move(sent));
                 if (sent->wordsCount() < min_words)
                     continue;
                 if (cyrillic && !sent->isCyrillic())
                     continue;
                 if (latin && !sent->isLatin())
                     continue;
-                output_sentence->write(sent);
+                output_sentence->write(sent.get());
             }
         }
         output_sentence->finish();

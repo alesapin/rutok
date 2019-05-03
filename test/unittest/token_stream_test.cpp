@@ -8,19 +8,19 @@
 #include <streams/SmallGroupsTokenConcatInputStream.h>
 #include <streams/IdenticalConcatInputStream.h>
 #include <streams/EncodingOutputStream.h>
-#include <streams/EncodingInputStream.h>
+#include <streams/EncodingInputStreamFromStream.h>
 #include <sstream>
 
 using namespace RS;
 using namespace RS::Unicorn;
 using namespace tokenize;
 using IStringStreamPtr = std::shared_ptr<std::istringstream>;
-using EncodingStreamPtr = std::shared_ptr<EncodingInputStream>;
+using EncodingStreamPtr = std::shared_ptr<EncodingInputStreamFromStream>;
 
 std::pair<EncodingStreamPtr, IStringStreamPtr> strToSteam(const std::string & str)
 {
     IStringStreamPtr iss = std::make_shared<std::istringstream>(str, std::ios::binary);
-    EncodingStreamPtr result = std::make_shared<EncodingInputStream>(*iss);
+    EncodingStreamPtr result = std::make_shared<EncodingInputStreamFromStream>(*iss);
     return std::make_pair(result, iss);
 }
 
@@ -431,7 +431,7 @@ TEST(TokenConcatInputStreamTest, TestWordWrap)
 void simpleEncodingCheck(const std::string & str, const std::string & readen, size_t buf_size, size_t read_size)
 {
     auto [_, ss1] = strToSteam(str);
-    EncodingInputStream iss(*ss1, buf_size);
+    EncodingInputStreamFromStream iss(*ss1, buf_size);
     std::string result;
     std::string tmp;
     while(iss.read(tmp, read_size))

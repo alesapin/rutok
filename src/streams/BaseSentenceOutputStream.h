@@ -14,7 +14,7 @@ public:
     BaseSentenceOutputStream(std::unique_ptr<BaseTokenOutputStream> holder_)
         : output(std::move(holder_)) {}
 
-    virtual void write(SentencePtr sentence);
+    virtual void write(const Sentence * sentence);
     virtual void start() { output->start(); };
     virtual void finish() { output->finish(); };
     virtual void flush() { output->flush(); };

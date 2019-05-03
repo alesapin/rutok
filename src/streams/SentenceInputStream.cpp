@@ -34,7 +34,7 @@ SentencePtr buildSentence(std::deque<TokenPtr> & tokens, size_t to)
         new_tokens.pop_back();
 
     tokens.erase(begin, end);
-    return std::make_shared<Sentence>(std::move(new_tokens));
+    return std::make_unique<Sentence>(std::move(new_tokens));
 }
 
 ESentenceStatus isSentenceEndAtSecond(

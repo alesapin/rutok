@@ -4,7 +4,7 @@
 #include <memory>
 #include <fstream>
 
-#include <streams/EncodingInputStream.h>
+#include <streams/EncodingInputStreamFromStream.h>
 #include <streams/TokenInputStream.h>
 #include <streams/EncodingOutputStream.h>
 #include <streams/SmallGroupsTokenConcatInputStream.h>
@@ -85,7 +85,7 @@ try
         out = holding_out_stream.get();
     }
 
-    EncodingInputStream enc_inp(*inp);
+    EncodingInputStreamFromStream enc_inp(*inp);
     TokenInputStream base_strm(enc_inp);
     IdenticalConcatInputStream ident(base_strm);
     SmallGroupsTokenConcatInputStream concater(ident);
@@ -105,7 +105,7 @@ try
         else if(latin && !sentence->isLatin())
             continue;
         if (word_only)
-            sentence = Sentence::toWordsOnly(sentence);
+            sentence = Sentence::toWordsOnly(std::move(sentence));
 
         if (encoding.empty())
         {

@@ -3,7 +3,7 @@
 #include <streams/TokenInputStream.h>
 #include <streams/SmallGroupsTokenConcatInputStream.h>
 #include <streams/SentenceInputStream.h>
-#include <streams/EncodingInputStream.h>
+#include <streams/EncodingInputStreamFromStream.h>
 #include <streams/IdenticalConcatInputStream.h>
 #include <sstream>
 
@@ -12,7 +12,7 @@ TEST(SentenceTest, SimpleFunctionsTest)
 {
     std::string str{"Hello world."};
     auto ss = std::istringstream(str, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     auto first = strm.read();
     auto second = strm.read();
@@ -24,7 +24,7 @@ TEST(SentenceTest, SimpleFunctionsTest)
     tokens.emplace_back(std::move(second));
     tokens.emplace_back(std::move(third));
     tokens.emplace_back(std::move(fourth));
-    SentencePtr s = std::make_shared<Sentence>(std::move(tokens));
+    SentencePtr s = std::make_unique<Sentence>(std::move(tokens));
     EXPECT_EQ(s->tokensCount(), 4);
     EXPECT_EQ(s->wordsCount(), 2);
     EXPECT_EQ(s->charactersCount(), str.length());
@@ -39,7 +39,7 @@ TEST(SentenceTest, SimpleFunctionsTest)
     EXPECT_FALSE(s->isEmpty());
 
     EXPECT_EQ(s->asText(), str);
-    auto words_only_sentence = Sentence::toWordsOnly(s);
+    auto words_only_sentence = Sentence::toWordsOnly(std::move(s));
 
     EXPECT_EQ(words_only_sentence->wordsCount(), 2);
     EXPECT_EQ(words_only_sentence->tokensCount(), 3);
@@ -51,7 +51,7 @@ TEST(SentenceTest, SimpleFunctionsTest2)
 {
     std::string str{"\"Привет!\""};
     auto ss = std::istringstream(str, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     auto first = strm.read();
     auto second = strm.read();
@@ -63,7 +63,7 @@ TEST(SentenceTest, SimpleFunctionsTest2)
     tokens.emplace_back(std::move(second));
     tokens.emplace_back(std::move(third));
     tokens.emplace_back(std::move(fourth));
-    SentencePtr s = std::make_shared<Sentence>(std::move(tokens));
+    SentencePtr s = std::make_unique<Sentence>(std::move(tokens));
     EXPECT_EQ(s->tokensCount(), 4);
     EXPECT_EQ(s->wordsCount(), 1);
     EXPECT_GT(s->bytesCount(), s->charactersCount());
@@ -78,7 +78,7 @@ TEST(SentenceTest, SimpleFunctionsTest2)
     EXPECT_FALSE(s->isEmpty());
 
     EXPECT_EQ(s->asText(), str);
-    auto words_only_sentence = Sentence::toWordsOnly(s);
+    auto words_only_sentence = Sentence::toWordsOnly(std::move(s));
 
     EXPECT_EQ(words_only_sentence->wordsCount(), 1);
     EXPECT_EQ(words_only_sentence->tokensCount(), 1);
@@ -91,7 +91,7 @@ TEST(SentenceTest, SimpliestSentenceInputStreamTest)
 
     std::string str{"Hello world. Привет Мир."};
     auto ss = std::istringstream(str, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
@@ -109,7 +109,7 @@ TEST(SentenceTest, AdvancedSentenceInputStreamTest)
 
     std::string str{"Hello! world.Привет? Мир"};
     auto ss = std::istringstream(str, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
@@ -130,7 +130,7 @@ TEST(SentenceTest, HellSentenceInputStreamTest)
 {
     std::string str{"Hello! world...Привет?Мир!? пока156	привет ...???"};
     auto ss = std::istringstream(str, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     IdenticalConcatInputStream strm1(strm);
     SmallGroupsTokenConcatInputStream concater(strm1);
@@ -157,7 +157,7 @@ TEST(SentenceTest, CornerSentenceInputStreamTest)
 {
     std::string str{"Академик И. П. Павлов и т.д. Ввели понятие."};
     auto ss = std::istringstream(str, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
@@ -174,7 +174,7 @@ TEST(SentenceTest, Corner2SentenceInputStreamTest)
 {
     std::string str{"И господин И. Костиков. Однако другие считали, что."};
     auto ss = std::istringstream(str, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     SmallGroupsTokenConcatInputStream concater(strm);
     SentenceInputStream sentence_stream(concater);
@@ -191,7 +191,7 @@ TEST(SentenceTest, TrashSentenceInputStreamTest)
 {
     std::string str{"...several..."};
     auto ss = std::istringstream(str, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     IdenticalConcatInputStream strm1(strm);
     SmallGroupsTokenConcatInputStream concater(strm1);
@@ -207,7 +207,7 @@ TEST(SentenceTest, Trash1SentenceInputStreamTest)
 {
     std::string str{"The>GOOD!... The<BAD!... The/UGLY!..."};
     auto ss = std::istringstream(str, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     IdenticalConcatInputStream strm1(strm);
     SmallGroupsTokenConcatInputStream concater(strm1);
@@ -227,7 +227,7 @@ TEST(SentenceTest, Trash2SentenceInputStreamTest)
 {
     std::string str{"Г. М.: М-м-м... Большую частью."};
     auto ss = std::istringstream(str, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     IdenticalConcatInputStream strm1(strm);
     SmallGroupsTokenConcatInputStream concater(strm1);
@@ -250,7 +250,7 @@ TEST(SentenceTest, LongSentenceInputStreamTest)
     std::string str = oss.str();
     std::string part{"Hello."};
     auto ss = std::istringstream(str + part, std::ios::binary);
-    EncodingInputStream encss(ss);
+    EncodingInputStreamFromStream encss(ss);
     TokenInputStream strm(encss);
     IdenticalConcatInputStream strm1(strm);
     SmallGroupsTokenConcatInputStream concater(strm1);

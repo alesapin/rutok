@@ -177,7 +177,7 @@ SentencePtr Sentence::toWordsOnly(SentencePtr sentence)
     }
     if (!new_tokens.empty())
         new_tokens.pop_back();
-    SentencePtr result = std::make_shared<Sentence>();
+    SentencePtr result = std::make_unique<Sentence>();
     result->tokens.swap(new_tokens);
     return result;
 }

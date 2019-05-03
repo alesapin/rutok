@@ -13,6 +13,6 @@ public:
         : BaseSentenceOutputStream(std::make_unique<TokenJSONOutputStream>(output_, pretty))
     {}
 
-    void write(SentencePtr sentence) override;
+    void write(const Sentence * sentence) override;
 };
 }
