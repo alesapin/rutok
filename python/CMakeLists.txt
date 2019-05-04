@@ -1,2 +1,2 @@
-pybind11_add_module(pyrutok rutok.cpp)
-target_link_libraries(pyrutok PRIVATE rutoklib)
+pybind11_add_module(rutokpy rutok.cpp)
+target_link_libraries(rutokpy PRIVATE rutoklib)

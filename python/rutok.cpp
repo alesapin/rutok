@@ -5,6 +5,7 @@
 #include <core/Sentence.h>
 #include <pybind11/stl.h>
 #include <cstdio>
+#include <deque>
 #include <pybind11/iostream.h>
 #include <streams/BaseCharInputStream.h>
 #include <streams/EncodingInputStreamFromDescriptor.h>
@@ -72,15 +73,7 @@ public:
     }
 };
 
-PYBIND11_MODULE(pyrutok, m) {
-    m.doc() = R"pbdoc(
-        -----------------------
-        .. currentmodule:: cmake_example
-        .. autosummary::
-           :toctree: _generate
-           add
-           subtract
-    )pbdoc";
+PYBIND11_MODULE(rutokpy, m) {
     py::enum_<ETokenType>(m, "TokenType", py::arithmetic())
         .value("UNKNOWN", ETokenType::UNKNOWN)
         .value("WORD", ETokenType::WORD)
@@ -113,15 +106,13 @@ PYBIND11_MODULE(pyrutok, m) {
         .value("MIX_LANG", EGraphemTag::MIX_LANG)
         .value("MULTI_SYMBOL", EGraphemTag::MULTI_SYMBOL)
         .value("WRAPPED_WORD", EGraphemTag::WRAPPED_WORD)
-        .def("__repr__", [](EGraphemTag tag) { return toString<EGraphemTag>(tag, ",");})
-        .def("__str__", [](EGraphemTag tag) { return toString<EGraphemTag>(tag, ",");});
+        .def_static("to_tag_set", &toTagSet<EGraphemTag>);
 
     py::enum_<ESemanticTag>(m, "SemanticTag", py::arithmetic())
         .value("UNKNOWN", ESemanticTag::UNKNOWN)
         .value("SENTENCE_END", ESemanticTag::SENTENCE_END)
         .value("PARAGRAPH_END", ESemanticTag::PARAGRAPH_END)
-        .def("__repr__", &toString<EGraphemTag>)
-        .def("__str__", &toString<EGraphemTag>);
+        .def_static("to_tag_set", &toTagSet<ESemanticTag>);
 
     py::class_<Token>(m, "TokenImpl")
         .def("__getitem__", [](const Token & tok, size_t index) { return tok.at(index); }, py::is_operator())
@@ -149,6 +140,10 @@ PYBIND11_MODULE(pyrutok, m) {
         .def_static("refine", &Token::refine)
         .def_static("concat", &Token::concat);
 
+    py::class_<TokenHasher>(m, "TokenHasherImpl")
+        .def(py::init())
+        .def("hashit", &TokenHasher::operator());
+
     py::class_<CommonInputStreamFromFD>(m, "CommonInputStreamFromFD")
         .def(py::init<int, size_t>())
         .def("read", &CommonInputStreamFromFD::read);
@@ -157,19 +152,20 @@ PYBIND11_MODULE(pyrutok, m) {
         .def(py::init<const std::string &, size_t>())
         .def("read", &CommonInputStreamFromString::read);
 
+
     py::class_<Sentence>(m, "SentenceImpl")
-        .def(py::init<const std::deque<TokenPtr> &>())
         .def("tokens_count", &Sentence::tokensCount)
         .def("words_count", &Sentence::wordsCount)
+        .def("characters_count", &Sentence::charactersCount)
+        .def("__len__", &Sentence::tokensCount)
         .def("bytes_count", &Sentence::bytesCount)
         .def("is_ends_correctly", &Sentence::isEndsCorrectly)
         .def("is_starts_correctly", &Sentence::isStartsCorrectly)
-        .def("__len__", &Sentence::charactersCount)
         .def("is_quoted", &Sentence::isQuoted)
         .def("is_words_only", &Sentence::isWordsOnly)
         .def("is_cyrillic", &Sentence::isCyrillic)
         .def("is_latin", &Sentence::isLatin)
         .def("empty", &Sentence::isEmpty)
-        .def("get_token", &Sentence::getTokenPtr)
+        .def("get_token", &Sentence::getTokenRef)
         .def("as_text", &Sentence::asText);
 }
