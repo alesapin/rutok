@@ -12,7 +12,9 @@
 ### CLI
 ```
 $ git clone https://github.com/alesapin/rutok
-$ cd rutok && mkdir build && cd build
+$ cd rutok 
+$ git submodule update --init --recursive
+& mkdir build && cd build
 $ cmake ..
 $ make -j `nproc`
 $ programs/rutok --sentence
@@ -30,6 +32,7 @@ $ programs/rutok --sentence
 
 ```
 $ git clone https://github.com/alesapin/rutok
+$ cd rutok 
 $ git submodule update --init --recursive
 $ sudo pip install .
 ```
