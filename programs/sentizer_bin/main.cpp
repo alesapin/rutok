@@ -38,7 +38,7 @@ try
     args::Flag latin(parser, "latin", "Output only latin words", {'e', "latin"});
     args::Flag lower(parser, "lower", "Print each word in lower case", {'l', "lower"});
     args::Flag upper(parser, "upper", "Print each word in upper case", {'u', "upper"});
-    args::Flag word_only(parser, "word-only", "Output only words", {'w', "word-only"});
+    args::Flag word_only(parser, "words-only", "Output only words", {'w', "words-only"});
 
     args::ValueFlag<int> min_words(
         parser,
