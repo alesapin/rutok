@@ -34,6 +34,6 @@ $ git submodule update --init --recursive
 $ sudo pip install .
 ```
 
-## [[Примеры][https://github.com/alesapin/rutok/example]]
+## [Примеры](https://github.com/alesapin/rutok/example)
 
 
