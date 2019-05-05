@@ -105,7 +105,7 @@ try
         else if(latin && !sentence->isLatin())
             continue;
         if (word_only)
-            sentence = Sentence::toWordsOnly(std::move(sentence));
+            sentence = Sentence::toWordsOnly(sentence.get());
 
         if (encoding.empty())
         {

@@ -87,9 +87,9 @@ try {
         "str");
 
     args::Flag word_only(
-        parser, "word-only",
+        parser, "words-only",
         "Output only words",
-        {'w', "word-only"});
+        {'w', "words-only"});
 
     args::Flag pretty(
         parser, "pretty",
@@ -170,7 +170,7 @@ try {
             if (auto sent = sent_inp.read(); sent)
             {
                 if (word_only)
-                    sent = Sentence::toWordsOnly(std::move(sent));
+                    sent = Sentence::toWordsOnly(sent.get());
                 if (sent->wordsCount() < min_words)
                     continue;
                 if (cyrillic && !sent->isCyrillic())

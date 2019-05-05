@@ -163,7 +163,7 @@ std::string Sentence::asText(bool to_lower, bool to_upper) const
     return oss.str();
 }
 
-SentencePtr Sentence::toWordsOnly(SentencePtr sentence)
+SentencePtr Sentence::toWordsOnly(const Sentence * sentence)
 {
     std::deque<TokenPtr> new_tokens;
     for (size_t i = 0; i < sentence->tokens.size(); ++i)

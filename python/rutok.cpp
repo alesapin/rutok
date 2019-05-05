@@ -106,13 +106,15 @@ PYBIND11_MODULE(rutokpy, m) {
         .value("MIX_LANG", EGraphemTag::MIX_LANG)
         .value("MULTI_SYMBOL", EGraphemTag::MULTI_SYMBOL)
         .value("WRAPPED_WORD", EGraphemTag::WRAPPED_WORD)
-        .def_static("to_tag_set", &toTagSet<EGraphemTag>);
+        .def_static("to_tag_set", &toTagSet<EGraphemTag>)
+        .def_static("contains", &contains<EGraphemTag>);
 
     py::enum_<ESemanticTag>(m, "SemanticTag", py::arithmetic())
         .value("UNKNOWN", ESemanticTag::UNKNOWN)
         .value("SENTENCE_END", ESemanticTag::SENTENCE_END)
         .value("PARAGRAPH_END", ESemanticTag::PARAGRAPH_END)
-        .def_static("to_tag_set", &toTagSet<ESemanticTag>);
+        .def_static("to_tag_set", &toTagSet<ESemanticTag>)
+        .def_static("contains", &contains<ESemanticTag>);
 
     py::class_<Token>(m, "TokenImpl")
         .def("__getitem__", [](const Token & tok, size_t index) { return tok.at(index); }, py::is_operator())
@@ -167,5 +169,6 @@ PYBIND11_MODULE(rutokpy, m) {
         .def("is_latin", &Sentence::isLatin)
         .def("empty", &Sentence::isEmpty)
         .def("get_token", &Sentence::getTokenRef)
-        .def("as_text", &Sentence::asText);
+        .def("as_text", &Sentence::asText)
+        .def_static("to_words", &Sentence::toWordsOnly);
 }

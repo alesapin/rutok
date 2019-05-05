@@ -39,7 +39,7 @@ TEST(SentenceTest, SimpleFunctionsTest)
     EXPECT_FALSE(s->isEmpty());
 
     EXPECT_EQ(s->asText(), str);
-    auto words_only_sentence = Sentence::toWordsOnly(std::move(s));
+    auto words_only_sentence = Sentence::toWordsOnly(s.get());
 
     EXPECT_EQ(words_only_sentence->wordsCount(), 2);
     EXPECT_EQ(words_only_sentence->tokensCount(), 3);
@@ -78,7 +78,7 @@ TEST(SentenceTest, SimpleFunctionsTest2)
     EXPECT_FALSE(s->isEmpty());
 
     EXPECT_EQ(s->asText(), str);
-    auto words_only_sentence = Sentence::toWordsOnly(std::move(s));
+    auto words_only_sentence = Sentence::toWordsOnly(s.get());
 
     EXPECT_EQ(words_only_sentence->wordsCount(), 1);
     EXPECT_EQ(words_only_sentence->tokensCount(), 1);

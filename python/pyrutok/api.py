@@ -1,4 +1,4 @@
-from rutokpy import TokenImpl, CommonInputStreamFromFD
+from rutokpy import TokenImpl, CommonInputStreamFromFD, SentenceImpl
 from rutokpy import TokenHasherImpl
 from rutokpy import CommonInputStreamFromString
 from rutokpy import GraphemTag, SemanticTag, TokenType
@@ -131,6 +131,39 @@ class Sentence(object):
     def __iter__(self):
         for i in range(len(self)):
             yield self[i]
+
+    def only_words(self):
+        return Sentence(SentenceImpl.to_words(self._sentence_impl))
+
+    def is_latin(self):
+        return self._sentence_impl.is_latin()
+
+    def is_words_only(self):
+        return self._sentence_impl.is_words_only()
+
+    def is_cyrillic(self):
+        return self._sentence_impl.is_cyrillic()
+
+    def is_quoted(self):
+        return self._sentence_impl.is_quoted()
+
+    def is_starts_correctly(self):
+        return self._sentence_impl.is_starts_correctly()
+
+    def is_ends_correctly(self):
+        return self._sentence_impl.is_ends_correctly()
+
+    def charactes_count(self):
+        return self._sentence_impl.characters_count()
+
+    def words_count(self):
+        return self._sentence_impl.words_count()
+
+    def tokens_count(self):
+        return len(self)
+
+    def as_text(self, to_lower=False, to_upper=False):
+        return self._sentence_impl.as_text(to_lower, to_upper)
 
 
 class Tokenizer(object):

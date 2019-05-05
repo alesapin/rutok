@@ -51,7 +51,7 @@ public:
     /// Return sentence as text
     std::string asText(bool to_lower=false, bool to_upper=false) const;
 
-    static std::unique_ptr<Sentence> toWordsOnly(std::unique_ptr<Sentence> sentence);
+    static std::unique_ptr<Sentence> toWordsOnly(const Sentence * sentence);
 };
 using SentencePtr = std::unique_ptr<Sentence>;
 }
